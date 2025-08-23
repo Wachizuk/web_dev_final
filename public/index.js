@@ -2,8 +2,8 @@
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault(); // Prevent the default form submission (which reloads the page)
 
-  // Get the email and password values from the input fields
-  const email = document.getElementById("email").value;
+  // Get the userIdentifier and password values from the input fields
+  const userIdentifier = document.getElementById("userIdentifier").value;
   const password = document.getElementById("password").value;
   const errorToast = new bootstrap.Toast(document.getElementById("errorToast"));
   const successToast = new bootstrap.Toast(
@@ -15,7 +15,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const res = await fetch("/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }), // Send email & password as JSON
+      body: JSON.stringify({ userIdentifier, password }), // Send userIdentifier & password as JSON
     });
 
     // Convert the server's response from JSON to a JavaScript object

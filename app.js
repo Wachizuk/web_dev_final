@@ -1,6 +1,11 @@
 require('custom-env').env('', './config');
 const express = require('express');
 const connectDB = require('./config/db');
+const cors = require('cors');
+
+//middleware imports
+
+const session = require('express-session');
 
 const app = express();
 
@@ -18,9 +23,16 @@ if (!process.env.PORT) {
 }
 
 // ---------------- MIDDLEWARE ----------------
+// Middleware for cors security
+app.use(cors());
+// Middle ware for handling user sessions
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  saveUninitialized: false, // saves only if a session parameter is set
+  resave: false // saves only when a session parameter changes
+}));
 // Middleware to parse incoming JSON requests (body parser)
 app.use(express.json());
-app.use(express.static('public'));
 
 // ---------------- ROUTES ----------------
 // Load the index route (main page routes)
@@ -30,6 +42,9 @@ app.use('/', indexRoute);
 // Load the authentication route (login, register, etc.)
 const authRoute = require('./routes/auth');
 app.use('/auth', authRoute); 
+
+//after routes so overides will be possible for default paths
+app.use(express.static('public'));
 
 // ---------------- CONNECT TO DATABASE ----------------
 // Connect to MongoDB using the connectDB function
