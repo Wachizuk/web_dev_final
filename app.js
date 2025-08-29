@@ -34,6 +34,8 @@ app.use(session({
 // Middleware to parse incoming JSON requests (body parser)
 app.use(express.json());
 
+app.set('view engine', 'ejs')
+
 // ---------------- ROUTES ----------------
 // Load the index route (main page routes)
 const indexRoute = require('./routes/index');
