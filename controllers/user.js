@@ -23,7 +23,7 @@ function logout(req, res) {
   });
 }
 
-function mainPage(req, res) { res.sendFile(path.join(__dirname, '../public/main_page.html')) }
+function mainPage(req, res) { res.render('../views/main/base') }
 function loginPage(req, res) { res.sendFile(path.join(__dirname, '../public/index.html')) }
 
 const login = async (req, res) => {
@@ -43,7 +43,7 @@ const login = async (req, res) => {
   try {
     req.session._id = userId; // update session with user id to keep track
 
-    //OLD METHOD: pass json back to client and make the redirect over there
+    //pass json back to client and make the redirect over there
     return res.json({ message: "Login successful", success: true }); 
 
 

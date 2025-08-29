@@ -27,7 +27,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       successToast.show();
       document.querySelector(".form-container").classList.add("suck-away");
       setTimeout(() => {
-        window.location.href = "/main_page.html";
+        window.location.href = "/";
       }, 2000);
     } else {
       // If login failed, show a failure alert
