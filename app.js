@@ -34,16 +34,13 @@ app.use(session({
 // Middleware to parse incoming JSON requests (body parser)
 app.use(express.json());
 
+// Set EJS as the default template engine for rendering views
 app.set('view engine', 'ejs')
 
 // ---------------- ROUTES ----------------
-// Load the index route (main page routes)
-const indexRoute = require('./routes/index');
-app.use('/', indexRoute); 
-
 // Load the authentication route (login, register, etc.)
 const authRoute = require('./routes/auth');
-app.use('/auth', authRoute); 
+app.use('/', authRoute); 
 
 //after routes so overides will be possible for default paths
 app.use(express.static('public'));

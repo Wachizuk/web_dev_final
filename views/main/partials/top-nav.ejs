@@ -4,16 +4,16 @@
       <ul id="top-nav-dropdowns" class="list-inline nav-list">
         <li class="list-inline-item">
           <div class="dropdown">
-            <button
-              id="account-dropdown-btn"
-              class="btn dropdown-toggle nav-dropdown-btn"
-              type="button"
-              data-bs-toggle="dropdown"
-              title="account"
-            >
+            <button id="account-dropdown-btn" class="btn dropdown-toggle nav-dropdown-btn" type="button"
+              data-bs-toggle="dropdown" title="account">
               <i class="bi-person"></i>
+              <div id="loggedAccount">
+                <%=username%>
+              </div>
             </button>
-            <ul id="account-menu" class="dropdown-menu"></ul>
+            <ul id="account-menu" class="dropdown-menu">
+              <button id="leaveBtn" class="dropdown-item red" type="button">Log out</button>
+            </ul>
           </div>
         </li>
       </ul>
@@ -33,18 +33,9 @@
     <div id="top-nav-right-col" class="col-3 nav-col">
       <form id="top-nav-search-form" class="" role="search">
         <div id="top-nav-search-group" class="input-group search-group">
-          <input
-            dir="rtl"
-            id="top-nav-search-input"
-            class="form-control search-bar"
-            type="search"
-            placeholder="search..."
-            aria-label="Search"
-          />
-          <span
-            id="top-nav-search-icon-wrap"
-            class="input-group-text search-bar-img"
-          >
+          <input dir="rtl" id="top-nav-search-input" class="form-control search-bar" type="search"
+            placeholder="search..." aria-label="Search" />
+          <span id="top-nav-search-icon-wrap" class="input-group-text search-bar-img">
             <i id="top-nav-search-icon" class="bi bi-search"></i>
           </span>
         </div>

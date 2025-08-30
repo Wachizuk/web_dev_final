@@ -1,9 +1,22 @@
+const { get } = require('mongoose');
 const User = require('../models/user'); // Import the User model from Mongoose
 const Validator = require('./validator');
 
 const getUserByEmail = async (email) =>{return await User.findOne({ email: email.toLowerCase() })};
 const getUserByUsername = async (username) => {return await User.findOne({username})};
 const getUserById = async (id) => {return await User.findById(id)}
+
+
+//helper functions to get user properties by id
+const getEmail = async (id) => {
+    const user =  await getUserById(id);
+    return user ? user.email : null
+}
+const getUsername = async (id) => {
+    const user = await getUserById(id);
+    return user ? user.username : null
+}
+
 
 /**
  * creates a user in db if params are valid and username is not taken
@@ -52,4 +65,4 @@ async function login(userIdentifier, password) {
 }
 
 
-module.exports = {getUserByEmail, getUserByUsername, getUserById, login, register}
+module.exports = {getUserByEmail, getUserByUsername, getUserById,getEmail,getUsername, login, register}

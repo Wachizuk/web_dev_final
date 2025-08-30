@@ -1,3 +1,9 @@
+const registerBtn = document.getElementById("registerBtn");
+
+registerBtn.addEventListener("click", () => {
+  window.location.href = "/register";
+});
+
 // Add an event listener to the login form for the "submit" event
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault(); // Prevent the default form submission (which reloads the page)
@@ -6,13 +12,11 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   const userIdentifier = document.getElementById("userIdentifier").value;
   const password = document.getElementById("password").value;
   const errorToast = new bootstrap.Toast(document.getElementById("errorToast"));
-  const successToast = new bootstrap.Toast(
-    document.getElementById("successToast")
-  );
+  const successToast = new bootstrap.Toast(document.getElementById("successToast"));
 
   try {
-    // Send a POST request to the server at /auth/login
-    const res = await fetch("/auth/login", {
+    // Send a POST request to the server at /login
+    const res = await fetch("/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userIdentifier, password }), // Send userIdentifier & password as JSON
