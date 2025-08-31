@@ -1,3 +1,5 @@
+
+
 /**
  * validates username is string, has no leading or trailing whitespace chars and is not an email
  * @param {*} username
@@ -34,4 +36,14 @@ function validateEmail(email) {
     return res;
 }
 
-module.exports = {validateEmail, validatePassword, validateUsername}
+function validatePostParams(author, title, contentBlocks) {
+    if (!author) throw new Error("Author is required");
+    if (!title || typeof title !== "string" || title.trim().length !== title.length) throw new Error("invalid title");
+    
+    for(const block of contentBlocks) {
+        if(!block.type) throw new Error('block type missing');
+        if(!block.value) throw new Error('block value missing');
+    }
+}
+
+module.exports = {validateEmail, validatePassword, validateUsername, validatePostParams}

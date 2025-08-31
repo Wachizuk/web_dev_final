@@ -1,0 +1,39 @@
+<div class="card post">
+  <div class="card-header post-header">
+    <div class="container">
+      <div class="row">
+        <div class="col-6 post-header-left-side">
+          <h4 class="card-title post-title"><%= post.title %></h4>
+        </div>
+        <div class="col-6 post-header-right-side">
+            <div class="post-created-date"><%= post.createdAtFormatted %></div>
+          <a class="post-author" href="#"><%= post.authorUsername %></a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-body post-body">
+    <!-- render all content blocks according to type -->
+    <% post.content.forEach(block => { if (block.type === "text") { %>
+    <p class="post-block card-text post-text"><%= block.value %></p>
+    <% } else if (block.type === "image") { %>
+    <img class="post-block card-img post-img" src="<%=block.value%>" alt="" />
+    <% } else if (block.type === "video") {%>
+    <video class="post-block post-video" src="<%=block.value%>" controls></video>
+    <% } }) %>
+  </div>
+  <div class="card-footer post-footer">
+    <button
+      class="btn post-footer-btn post-like-btn <% if (post.likedByUser) { %>post-liked<% } %>"
+    >
+      <i
+        class="bi post-like-icon <% if (post.likedByUser) { %>bi-heart-fill<% } else { %> bi-heart <% } %>"
+      ></i>
+      <span class="post-num-of-likes"><%= post.numOfLikes %></span>
+    </button>
+    <button class="btn post-footer-btn post-comments-btn">
+      <i class="bi bi-chat-dots post-chat-icon"></i>
+      <span class="post-num-of-comments"><%= post.comments.length %></span>
+    </button>
+  </div>
+</div>
