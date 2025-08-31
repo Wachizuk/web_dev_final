@@ -11,6 +11,5 @@ const router = express.Router();
 // if user is logged in give main page, otherwise redirect to login page
 router.get('/', userController.isLoggedIn, userController.mainPage);
 
-
 // Export the router so it can be used in app.js
 module.exports = router;

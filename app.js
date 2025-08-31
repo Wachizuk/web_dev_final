@@ -25,7 +25,7 @@ if (!process.env.PORT) {
 // ---------------- MIDDLEWARE ----------------
 // Middleware for cors security
 app.use(cors());
-// Middle ware for handling user sessions
+// Middle ware for handling user sessions session.
 app.use(session({
   secret: process.env.SESSION_SECRET,
   saveUninitialized: false, // saves only if a session parameter is set
@@ -40,6 +40,10 @@ app.set('view engine', 'ejs')
 // Load the index route (main page routes)
 const indexRoute = require('./routes/index');
 app.use('/', indexRoute); 
+
+// Load the route for post data
+const postsRoute = require('./routes/posts');
+app.use('/posts', postsRoute);
 
 // Load the authentication route (login, register, etc.)
 const authRoute = require('./routes/auth');
