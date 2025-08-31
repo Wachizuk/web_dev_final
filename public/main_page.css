@@ -12,7 +12,7 @@
 
 html,
 body {
- 
+
     height: 100vh;
     margin: 0;
     padding: 0;
@@ -33,10 +33,18 @@ main {
 
 #main-container,
 #main-row {
-    height:  100%;
+    height: 100%;
 }
 
-
+/*Toasts */
+.toast-container.centered {
+    display: relative;
+    top: 40%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
 
 /*  top navbar */
@@ -51,7 +59,7 @@ main {
     top: 0;
     left: 0;
     right: 0;
-    padding: 0.5rem 0.4rem ;
+    padding: 0.5rem 0.4rem;
     box-shadow: 0 2px 4px var(--shadow-color);
     z-index: 5;
 }
@@ -62,7 +70,7 @@ main {
     justify-content: center;
 }
 
-#top-nav-container > * {
+#top-nav-container>* {
     display: flex;
     align-items: center;
 }
@@ -80,11 +88,16 @@ main {
 }
 
 .nav-dropdown-btn {
+    display: flex;
+    gap: 10px;
+    align-items: center;
     background-color: var(--bg-color-teritary);
     color: var(--color-teritary);
-    
 }
 
+.dropdown-toggle::after {
+    font-size: 20px;
+}
 
 /* top nav middle area */
 #top-nav-mid-col {
@@ -93,12 +106,12 @@ main {
     justify-content: center;
 }
 
-#top-nav-middle-btns{
+#top-nav-middle-btns {
     display: flex;
     justify-content: center;
 }
 
-.nav-btn{
+.nav-btn {
     margin: 0, 1em;
     background-color: var(--bg-color-teritary);
     color: var(--color-teritary);
@@ -116,23 +129,24 @@ main {
 #top-nav-search-form {
     display: flex;
     width: 100%;
-    box-shadow: -1px 2px 2px var(--shadow-color) ;
+    box-shadow: -1px 2px 2px var(--shadow-color);
 
 }
 
 #top-nav-search-icon-wrap {
-        background-color: var(--bg-color-teritary);
-        color: var(--color-teritary);
+    background-color: var(--bg-color-teritary);
+    color: var(--color-teritary);
 }
 
 
 /* side nav */
 #side-nav {
-      box-shadow: 2px 4px 2px var(--shadow-color);
+    box-shadow: 2px 4px 2px var(--shadow-color);
     background-color: var(--bg-color-secondary);
     color: var(--color-secondary);
     padding-top: 16px;
-    font-size: 1.5rem; /* font size to 24px for sidenav */ 
+    font-size: 1.5rem;
+    /* font size to 24px for sidenav */
 }
 
 @media (max-width: 800px) {
@@ -165,7 +179,7 @@ main {
     justify-content: start;
     border-radius: 4px;
 
- 
+
 }
 
 .side-nav-option-icon {
@@ -179,73 +193,13 @@ main {
     width: 1em;
 }
 
-.side-nav-option-name { /* prevent text overflow */ 
+.side-nav-option-name {
+    /* prevent text overflow */
     white-space: nowrap;
-    overflow: hidden; 
+    overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
 }
 
 /* content window  */
-#content-window {
-    padding-top: 1rem;
-}
 
-/* posts */
-.post-list {
-    justify-self: center;
-    list-style: none;
-    align-items: center;
-    justify-items: center;
-    width: 60%;
-}
-
-.post-list-item {
-    width: 100%;
-    margin-bottom: 1rem;
-    min-width: 20rem;
-    max-width: 100rem;
-}
-
-.post {
-    box-shadow: 0px 2px 6px var(--shadow-color);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    background-color: var(--bg-color-secondary);
-    color: var(--color-secondary);
-}
-
-.post:hover {
-    transform: translateY(-2px);
-    box-shadow: 0px 4px 12px var(--shadow-color);
-}
-
-.post-header-right-side {
-    display: flex;
-    justify-content: right;
-    align-items: center;
-}
-
-.post-title {
-    font-size: 2em;
-    overflow-wrap: break-word;
-}
-
-.post-author {
-    color: var(--color-secondary);
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.5em;
-}
-
-.post-created-date {
-    margin-right: 0.75em;
-    text-align: center;
-}
-
-.post-block {
-    max-width: 100%;
-}
-
-.post-text {
-    font-size: 1.5em;
-}
