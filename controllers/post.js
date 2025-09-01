@@ -1,4 +1,5 @@
 const postService = require("../services/post");
+const groupService = require("../services/group");
 const fs = require("fs");
 const path = require("path");
 
@@ -74,4 +75,15 @@ const getPostFile = async (req, res) => {
   });
 };
 
-module.exports = { getPostById, getPostCardById, getAllPosts, getPostFile };
+// renders the main feed page this way views/main/base knows when to use main-feed 
+const renderMainFeed = async (req, res) => {
+  const groups = await groupService.getAllGroups();
+  res.render("main/base", {
+    email: req.session.email,
+    username: req.session.username,
+    feedPartial: "main", //tells base.ejs to show main-feed
+    groups,
+  });
+};
+
+module.exports = { getPostById, getPostCardById, getAllPosts, getPostFile, renderMainFeed };

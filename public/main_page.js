@@ -2,6 +2,14 @@ import { getPostCard, getAllPosts } from "./posts.js";
 
 const postList = document.getElementById("post-list");
 
+
+//new addition for filtering posts by groups
+//if valid groupname available the read it, else null (main feed)
+let groupName = null;
+if (postList && postList.dataset && postList.dataset.group) {
+  groupName = postList.dataset.group;
+} 
+
 function addPostCardToList(postCard) {
   let liElem = document.createElement("li");
   liElem.classList.add("post-list-item");
@@ -16,13 +24,41 @@ async function getAndAddPostCard(postId) {
   else addPostCardToList(postCard);
 }
 
-async function renderAllPosts() {
+/* async function renderAllPosts() {
   const posts = await getAllPosts();
   posts.forEach((post) => {
     console.log(post);
     getAndAddPostCard(post._id);
   });
+} */
+
+
+//new addition for filtering posts by groups  
+async function renderAllPosts() {
+  let posts;
+
+  if (groupName) {
+    posts = await getAllPosts(); //will be switched to getPostsByGroup(groupName)
+  } else {
+    posts = await getAllPosts();
+  }
+
+  if (!Array.isArray(posts)) {
+    postList.innerHTML = "<li class='post-list-item'> Error: could not load posts</li>";
+    return;
+  }
+
+  if (posts.length === 0) {
+    postList.innerHTML = "<li class='post-list-item'> No posts available</li>";
+    return;
+  }
+
+  posts.forEach((post) => {
+    console.log(post); 
+    getAndAddPostCard(post._id);
+  });
 }
+
 
 renderAllPosts();
 

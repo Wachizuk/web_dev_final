@@ -1,5 +1,7 @@
+
 const { url } = require("inspector");
 const userService = require("../services/user");
+const groupService = require("../services/group");
 // Import the 'path' module to work with file and directory paths
 const path = require("path");
 
@@ -27,12 +29,21 @@ function logout(req, res) {
   });
 }
 
-// Render main page with user info (pulled from session)
-function mainPage(req, res) {
-  res.render(viewMainPage, {
-    email: req.session.email,
-    username: req.session.username,
-  });
+// Render main page
+async function mainPage(req, res) {
+    try {
+        const groups = await groupService.getAllGroups();
+        res.render(viewMainPage, {
+            email: req.session.email,
+            username: req.session.username,
+            feedPartial: "main",
+            groups,
+            groupName: null
+        });
+    } catch (err) {
+        console.error("Error in mainPage:", err);
+        res.status(500).send("Internal Server Error");
+    }
 }
 
 // Render login page
@@ -101,6 +112,7 @@ const login = async (req, res) => {
     res.status(500).json({ error: "error occured on the server" });
   }
 };
+
 
 // Export controller functions to be used in routes
 module.exports = {

@@ -1,7 +1,7 @@
 
 async function getAllPosts() {
     try {
-        const res = await fetch(`posts`);
+        const res = await fetch(`/posts`);
 
         if(!res.ok) {
             throw new Error("failed post fetch");
@@ -15,7 +15,7 @@ async function getAllPosts() {
 
 async function getPost(postId) {
     try {
-        const res = await fetch(`posts/${postId}`);
+        const res = await fetch(`/posts/${postId}`);
 
         if(!res.ok) {
             throw new Error("failed post fetch");
@@ -29,7 +29,7 @@ async function getPost(postId) {
 
 async function getPostCard(postId) {
     try {
-        const res = await fetch(`posts/card/${postId}`);
+        const res = await fetch(`/posts/card/${postId}`);
 
         if(!res.ok) {
             throw new Error(`response status code: ${res.status}`)

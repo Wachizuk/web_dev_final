@@ -1,3 +1,7 @@
+
+<% const gList = Array.isArray(locals.groups) ? locals.groups : []; %>
+
+
 <div id="side-nav" class="col-2">
   <!-- TEMPLATE FOR SIDE_NAV_LIST 18/08/2025 - initial design
              <ul class="side-nav-list">
@@ -51,25 +55,13 @@
         <i class="bi bi-people"></i>
       </h4>
     </li>
+    <% gList.forEach(g => { %>
     <li class="side-nav-list-item">
-      <button class="side-nav-option">
-        <img
-          class="side-nav-option-img"
-          src=""
-          srcset="images/team-placeholder.png"
-        />
-        <span class="side-nav-option-name">group number 1</span>
-      </button>
+      <a href="/groups/<%= g.groupName %>" class="side-nav-option d-flex align-items-center gap-2 text-decoration-none">
+        <img class="side-nav-option-img" src="/images/team-placeholder.png" alt="group icon" />
+        <span class="side-nav-option-name"><%= g.displayName %></span>
+      </a>
     </li>
-    <li class="side-nav-list-item">
-      <button class="side-nav-option">
-        <img
-          class="side-nav-option-img"
-          src=""
-          srcset="images/team-placeholder.png"
-        />
-        <span class="side-nav-option-name">group number number bumber 2</span>
-      </button>
-    </li>
+    <% }) %>
   </ul>
 </div>
