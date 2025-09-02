@@ -7,6 +7,7 @@ document
     const email = document.getElementById("email").value;
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
+    const errorToastMessage = document.getElementById("errorToastMessage");
     const errorToast = new bootstrap.Toast(
       document.getElementById("errorToast")
     );
@@ -18,7 +19,7 @@ document
     // Get the userIdentifier and password values from the input fields
     try {
       // Send a POST request to the server at /register
-      const res = await fetch("/register", {
+      const res = await fetch("/user/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }), // Send userIdentifier & password as JSON
@@ -37,6 +38,7 @@ document
         }, 2000);
       } else {
         // If Register failed, show a failure alert
+        errorToastMessage.innerText = data.message;
         errorToast.show();
       }
     } catch (err) {

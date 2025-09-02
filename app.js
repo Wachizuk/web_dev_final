@@ -43,9 +43,15 @@ app.set('view engine', 'ejs')
 // Load the route for post data
 const postsRoute = require('./routes/posts');
 app.use('/posts', postsRoute);
+
+// Load the route for user data
+const userRoute = require('./routes/user');
+app.use('/user', userRoute); 
+
 // Load the authentication route (login, register, etc.)
-const authRoute = require('./routes/auth');
-app.use('/', authRoute); 
+const baseRoute = require('./routes/base');
+app.use('/', baseRoute); 
+
 
 // Load the group route
 const groupsRoute = require("./routes/groups");

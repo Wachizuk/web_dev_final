@@ -6,7 +6,7 @@ const groupService = require("../services/group");
 const path = require("path");
 
 // Redirect URLs (routes)
-const urlLogin = "/login";
+const urlLogin = "/user/login";
 const urlMainPage = "/";
 const urlRegister = "/register";
 
@@ -63,12 +63,17 @@ const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
     const newAccount = await userService.register(username, email, password);
-
     // Registration successful
     if (newAccount === 1) {
       return res.json({ message: "Login successful", success: true });
-    } else {
-      return res.json({ message: "Registration failed", success: false });
+    } 
+    // -2: username already exists 
+     else if ( newAccount === -2) {
+      return res.json({ message: "Registration failed - username already exists", success: false });
+    }
+    // -3: email already exists
+     else if ( newAccount === -3) {
+      return res.json({ message: "Registration failed - email already exists", success: false });
     }
 
   } catch (err) {

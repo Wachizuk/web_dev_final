@@ -73,7 +73,7 @@ logoutBtn.addEventListener("click", (e) => {
 
 document.getElementById("confirmLogout").addEventListener("click", async () => {
   try {
-    const res = await fetch("/logout", {
+    const res = await fetch("/user/logout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({}), // Send userIdentifier & password as JSON
@@ -82,7 +82,7 @@ document.getElementById("confirmLogout").addEventListener("click", async () => {
     const data = await res.json();
 
     if (data.success) {
-      window.location.href = "/";
+      window.location.href = "/user/login";
     } else {
       console.error("Logout failed");
     }
