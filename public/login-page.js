@@ -1,13 +1,16 @@
 const registerBtn = document.getElementById("registerBtn");
 
+// Define the URLS
+const urlLogin  = "/user/login";
+const urlRegister = "/user/register";
+
 registerBtn.addEventListener("click", () => {
-  window.location.href = "/register";
+  window.location.href = urlRegister;
 });
 
 // Add an event listener to the login form for the "submit" event
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
-  e.preventDefault(); // Prevent the default form submission (which reloads the page)
-
+  e.preventDefault(); 
   // Get the userIdentifier and password values from the input fields
   const userIdentifier = document.getElementById("userIdentifier").value;
   const password = document.getElementById("password").value;
@@ -16,7 +19,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
   try {
     // Send a POST request to the server at /login
-    const res = await fetch("/login", {
+    const res = await fetch(urlLogin, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userIdentifier, password }), // Send userIdentifier & password as JSON
