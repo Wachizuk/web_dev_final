@@ -47,6 +47,10 @@ app.use('/posts', postsRoute);
 const authRoute = require('./routes/auth');
 app.use('/', authRoute); 
 
+// Load the group route
+const groupsRoute = require("./routes/groups");
+app.use("/groups", groupsRoute);
+
 //after routes so overides will be possible for default paths
 app.use(express.static('public'));
 
