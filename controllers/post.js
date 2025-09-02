@@ -70,7 +70,6 @@ const getPostFile = async (req, res) => {
   res.sendFile(filePath, (err) => {
     if (err) {
       console.log("failed sending the file:\n" + filePath);
-      return res.status(404).json({ error: "file not found" });
     }
   });
 };

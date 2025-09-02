@@ -1,16 +1,23 @@
 import { getPostCard, getAllPosts } from "./posts.js";
+import {getCreateGroupWindow, getGroupWindow} from "./groups.js"
 
-const postList = document.getElementById("post-list");
+const contentWindow = document.getElementById('content-window');
+
+
+
+
 
 
 //new addition for filtering posts by groups
 //if valid groupname available the read it, else null (main feed)
-let groupName = null;
-if (postList && postList.dataset && postList.dataset.group) {
-  groupName = postList.dataset.group;
-} 
+// let groupName = null;
+// if (postList && postList.dataset && postList.dataset.group) {
+//   groupName = postList.dataset.group;
+// } 
 
 function addPostCardToList(postCard) {
+  const postList = document.getElementById("post-list");
+  console.log("here")
   let liElem = document.createElement("li");
   liElem.classList.add("post-list-item");
 
@@ -20,6 +27,11 @@ function addPostCardToList(postCard) {
 
 async function getAndAddPostCard(postId) {
   let postCard = await getPostCard(postId);
+  let attemptNum = 0
+  while (!postCard && attemptNum++ < 3) {
+    postCard = await getPostCard(postId);
+  }
+
   if (!postCard) console.error(`failed getting post ${postId}`);
   else addPostCardToList(postCard);
 }
@@ -37,11 +49,11 @@ async function getAndAddPostCard(postId) {
 async function renderAllPosts() {
   let posts;
 
-  if (groupName) {
-    posts = await getAllPosts(); //will be switched to getPostsByGroup(groupName)
-  } else {
+  // if (groupName) {
+  //   posts = await getAllPosts(); //will be switched to getPostsByGroup(groupName)
+  // } else {
     posts = await getAllPosts();
-  }
+  // }
 
   if (!Array.isArray(posts)) {
     postList.innerHTML = "<li class='post-list-item'> Error: could not load posts</li>";
@@ -90,4 +102,30 @@ document.getElementById("confirmLogout").addEventListener("click", async () => {
     console.error(err);
   }
 });
+
+
+
+async function renderGroupWindow(groupName) {
+    const groupWindow = await getGroupWindow(groupName);
+    contentWindow.innerHTML = groupWindow;
+    renderAllPosts();
+}
+
+
+const sideGroups = [...document.getElementsByClassName('side-nav-group')]
+//swap content window with groups
+sideGroups.forEach(elem => {
+  elem.addEventListener('click', async (e) => {
+    const groupName = e.target.closest('button').id;
+    renderGroupWindow(groupName);
+  })
+});
+
+const createGroupBtn = document.getElementById('create-group-btn');
+
+createGroupBtn.addEventListener('click', async () => {
+  contentWindow.innerHTML = await getCreateGroupWindow();
+});
+
+
 

@@ -26,11 +26,7 @@
         <div id="main-row" class="row">
           <%- include('partials/side-nav', { groups: groups || [] }) %>
           <div id="content-window" class="col">
-            <% if (feedPartial === 'group') { %>
-              <%- include('./partials/group-feed', { groupName }) %>
-            <% } else { %>
               <%- include('./partials/main-feed') %>
-            <% } %>
           </div>
         </div>
       </div>

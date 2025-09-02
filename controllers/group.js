@@ -1,18 +1,18 @@
 const groupService = require("../services/group");
 
-const viewGroupPage = "main/base";
+const viewGroupRoute = "main/partials/group-feed";
+const createGroupRoute = "main/partials/create-group";
+
 
 async function groupPage(req, res) {
   const groupName = req.params.groupName;
-  const groups = await groupService.getAllGroups();
+  const group = await groupService.getGroupByName(groupName);
 
-  res.render(viewGroupPage, {
-    email: req.session.email,
-    username: req.session.username,
-    groupName,
-    feedPartial: "group",
-    groups,
-  });
+  res.render(viewGroupRoute, {groupName});
 }
 
-module.exports = { groupPage };
+async function createGroupPage(req, res) {
+  res.render(createGroupRoute, {});
+}
+
+module.exports = { groupPage, createGroupPage };
