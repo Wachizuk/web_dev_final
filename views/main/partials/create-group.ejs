@@ -1,1 +1,43 @@
-<div>add-group-feed</div>
+<div class="create-group-wrap">
+  <ul class="post-list">
+    <li class="post-list-item">
+      <div class="form-card">
+        <h3 class="form-title">Create a new group</h3>
+
+        <form id="create-group-form" novalidate>
+          <!-- Display name -->
+          <div class="form-group">
+            <label for="displayName" class="form-label">Display name</label>
+            <input id="displayName" name="displayName" type="text" class="text-input"
+                   placeholder="Group Number 3" required />
+            <p class="help-text">This is what users will see.</p>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label for="description" class="form-label">Group description</label>
+            <textarea id="description" name="description" rows="3" class="text-area"
+                      placeholder="What is this group about?"></textarea>
+          </div>
+
+          <!-- Admins -->
+          <div class="form-group">
+            <label for="admins" class="form-label">Admins (usernames)</label>
+            <input id="admins" name="admins" type="text" class="text-input"
+                   placeholder="alice, bob" />
+            <p class="help-text">Comma-separated usernames. The creator is added automatically.</p>
+          </div>
+
+          <!-- Managers -->
+          <div class="form-group">
+            <label for="managers" class="form-label">Managers (usernames)</label>
+            <input id="managers" name="managers" type="text" class="text-input"
+                   placeholder="dana, eli" />
+          </div>
+
+          <button type="submit" class="primary-btn w-full">Create group</button>
+        </form>
+      </div>
+    </li>
+  </ul>
+</div>

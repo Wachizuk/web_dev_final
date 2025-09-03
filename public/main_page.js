@@ -1,5 +1,5 @@
 import { getPostCard, getAllPosts } from "./posts.js";
-import {getCreateGroupWindow, getGroupWindow} from "./groups.js"
+import {getCreateGroupWindow, getGroupWindow, initCreateGroupForm} from "./groups.js"
 
 const contentWindow = document.getElementById('content-window');
 
@@ -35,14 +35,6 @@ async function getAndAddPostCard(postId) {
   if (!postCard) console.error(`failed getting post ${postId}`);
   else addPostCardToList(postCard);
 }
-
-/* async function renderAllPosts() {
-  const posts = await getAllPosts();
-  posts.forEach((post) => {
-    console.log(post);
-    getAndAddPostCard(post._id);
-  });
-} */
 
 
 //new addition for filtering posts by groups  
@@ -108,6 +100,7 @@ document.getElementById("confirmLogout").addEventListener("click", async () => {
 async function renderGroupWindow(groupName) {
     const groupWindow = await getGroupWindow(groupName);
     contentWindow.innerHTML = groupWindow;
+    window.location.hash = `/groups/${groupName}`;
     renderAllPosts();
 }
 
@@ -125,7 +118,13 @@ const createGroupBtn = document.getElementById('create-group-btn');
 
 createGroupBtn.addEventListener('click', async () => {
   contentWindow.innerHTML = await getCreateGroupWindow();
+  initCreateGroupForm (async(groupName) => {
+    await renderGroupWindow(groupName);
+    
+  });
 });
+
+
 
 
 

@@ -22,6 +22,37 @@ const getUsername = async (id) => {
   return user ? user.username : null;
 };
 
+
+// ----------------helper functions to get user ids by usernames (used for groups)----------------
+
+// cleans input and makes sure is a valid array
+function toUsernameArray(input) {
+  if (Array.isArray(input)) return input.map(s => String(s||"").trim()).filter(Boolean); //cleans input and makes sure is a valid array
+  if (typeof input === "string") 
+    return input.split(",").map(s => s.trim()).filter(Boolean); //if string, split by comma and clean
+  return [];
+}
+
+// helper functions to get id list from username list (used for group members)
+async function findUserIdsByUsernames(input) {
+  const usernames = toUsernameArray(input); //cleans input and makes sure is a valid array
+  if (usernames.length === 0) return []; //if empty
+  const users = await User.find({ username: { $in: usernames } }, { _id: 1 }).lean(); //fetch all users with one query return only _ids
+  return users.map(u => u._id); //return array of ObjectIds
+}
+
+// return just the invalid usernames (for invalid usernames allert) 
+async function findMissingUsernames(input) {
+  const usernames = toUsernameArray(input);
+  if (usernames.length === 0) return [];
+  const found = await User.find({ username: { $in: usernames } }, { username: 1 }).lean(); 
+  const ok = new Set(found.map(u => u.username)); //set of valid usernames
+  return usernames.filter(u => !ok.has(u)); //return only invalid usernames
+}
+
+//----------------------------------------end of helper functions----------------------------------------
+
+
 /**
  * creates a user in db if params are valid and username is not taken
  * @param {String} username - non empty string, not email, has no leading or trailing whitespace chars
@@ -76,4 +107,7 @@ module.exports = {
   getUsername,
   login,
   register,
+  toUsernameArray,
+  findUserIdsByUsernames,
+  findMissingUsernames,
 };
