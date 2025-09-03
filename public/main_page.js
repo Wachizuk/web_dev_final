@@ -1,4 +1,6 @@
 
+// Import functions from other modules
+import { getSettingWindow , initSettingsHandlers } from "./profile-menu/settings.js";
 import { renderAllPosts , getPostCard, getAllPosts} from "./posts.js";
 import {getCreateGroupWindow, getGroupWindow , initCreateGroupForm} from "./groups.js"
 import { renderContentWindow } from "./utils/renderer.js";
@@ -6,7 +8,8 @@ import { routes } from "./utils/routes.js";
 const contentWindow = document.getElementById('content-window');
 
 
-
+// Main content window container
+const contentWindow = document.getElementById('content-window');
 
 
 
@@ -53,7 +56,7 @@ document.getElementById("confirmLogout").addEventListener("click", async () => {
 });
 
 
-
+// Render group window inside the content area and reload posts
 async function renderGroupWindow(groupName) {
     const groupWindow = await getGroupWindow(groupName);
     contentWindow.innerHTML = groupWindow;
@@ -61,9 +64,16 @@ async function renderGroupWindow(groupName) {
     renderAllPosts();
 }
 
+// Render settings window inside the content area
+async function renderSettingsWindow() {
+  contentWindow.innerHTML = await getSettingWindow();
+  initSettingsHandlers();
+}
+document.getElementById('settingsBtn').addEventListener('click', renderSettingsWindow);
 
-const sideGroups = [...document.getElementsByClassName('side-nav-group')]
-//swap content window with groups
+
+// Attach click listeners to all side group navigation buttons
+const sideGroups = [...document.getElementsByClassName('side-nav-group')];
 sideGroups.forEach(elem => {
   elem.addEventListener('click', async (e) => {
     const groupName = e.target.closest('button').id;
@@ -74,9 +84,7 @@ sideGroups.forEach(elem => {
 });
 
 
-
 const createGroupBtn = document.getElementById('create-group-btn');
-
 createGroupBtn.addEventListener('click', async () => {
 contentWindow.innerHTML = await getCreateGroupWindow();
 initCreateGroupForm (async(groupName) => {
@@ -88,4 +96,3 @@ await renderGroupWindow(groupName);
 window.addEventListener('DOMContentLoaded', async () => {
   await renderContentWindow(window.location.hash.substring(1))
 })
-

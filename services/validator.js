@@ -6,7 +6,8 @@
  * @returns true - valid, false - invalid
  */
 function validateUsername(username) {
-    const res = typeof(username) === 'string' && username.length === username.trim().length && username.length > 0 && !validateEmail(username);
+    const res = typeof(username) === 'string' && username.length === username.trim().length && username.length > 0&&
+    !/\s/.test(username) && !validateEmail(username);
     if(res == false) console.log(`username validation falied for '${username}'`)
     return res;
 }

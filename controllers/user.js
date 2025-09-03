@@ -1,4 +1,3 @@
-
 const { url } = require("inspector");
 const userService = require("../services/user");
 const groupService = require("../services/group");
@@ -14,6 +13,7 @@ const urlRegister = "/register";
 const viewMainPage = "main/base";
 const viewLogin = "login-page/base";
 const viewRegister = "login-page/register-page";
+const viewSettings = "main/partials/settings";
 
 // Middleware to check if a user is logged in based on session._id
 // If logged in → continue, otherwise redirect to login page
@@ -31,30 +31,144 @@ function logout(req, res) {
 
 // Render main page
 async function mainPage(req, res) {
-    try {
-        const groups = await groupService.getAllGroups();
-        res.render(viewMainPage, {
-            email: req.session.email,
-            username: req.session.username,
-            feedPartial: "main",
-            groups,
-            groupName: null
-        });
-    } catch (err) {
-        console.error("Error in mainPage:", err);
-        res.status(500).send("Internal Server Error");
-    }
+  try {
+    const groups = await groupService.getAllGroups();
+    res.render(viewMainPage, {
+      email: req.session.email,
+      username: req.session.username,
+      feedPartial: "main",
+      groups,
+      groupName: null,
+    });
+  } catch (err) {
+    console.error("Error in mainPage:", err);
+    res.status(500).send("Internal Server Error");
+  }
 }
 
 // Render login page
-function loginPage(req, res) {
+async function loginPage(req, res) {
   res.render(viewLogin);
 }
 
 // Render register page
-function registerPage(req, res) {
+async function registerPage(req, res) {
   res.render(viewRegister);
 }
+
+//Render settings page
+async function settingsPage(req, res) {
+  const userId = req.session._id;
+  const email = await userService.getEmail(userId);
+  const username = await userService.getUsername(userId);
+  res.render(viewSettings, { userId, email, username });
+}
+
+// Controller: update username
+async function updateUsername(req, res) {
+  try {
+    const userId = req.session._id;
+
+    // Call service layer to change username
+    const result = await userService.changeUsername(userId, req.body.username);
+
+    // Handle failure (bad format, duplicate, not found, etc.)
+    if (!result.success) {
+      return res
+        .status(result.code)
+        .json({ success: false, message: result.message });
+    }
+
+    // Update session with new username
+    req.session.username = result.user.username;
+
+    return res.json({
+      success: true,
+      message: "Username updated successfully",
+    });
+  } catch (err) {
+    console.error("updateUsername fatal:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+}
+
+// Controller: update email
+async function updateEmail(req, res) {
+  try {
+    const userId = req.session._id;
+
+    // Call service layer to change email
+    const result = await userService.changeEmail(userId, req.body.email);
+
+    // Handle failure (bad format, duplicate, not found, etc.)
+    if (!result.success) {
+      return res
+        .status(result.code)
+        .json({ success: false, message: result.message });
+    }
+
+    // Update session with new email
+    req.session.email = result.user.email;
+
+    return res.json({ success: true, message: "Email updated successfully" });
+  } catch (err) {
+    console.error("updateEmail fatal:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+}
+
+// Controller: update password
+async function updatePassword(req, res) {
+  try {
+    const userId = req.session._id;
+
+    // Call service layer to change email
+    const result = await userService.changePassword(userId, req.body.password);
+
+    // Handle failure (bad format, duplicate, not found, etc.)
+    if (!result.success) {
+      return res
+        .status(result.code)
+        .json({ success: false, message: result.message });
+    }
+    return res.json({ success: true, message: "Password updated successfully" });
+  } catch (err) {
+    console.error("updatePassword fatal:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+}
+
+// Contreoller: delete Account 
+
+async function removeAccount(req, res) {
+  try {
+    // Identify the current user from session
+    const userId = req.session._id;
+
+    // Read password from request body 
+    const passowrd = req.body.password;
+
+    // Delegate to service
+    const result = await userService.deleteAccount(userId, passowrd);
+
+    // Handle service outcome
+    if (!result.success) {
+      return res.status(result.code ?? 400).json({
+        success: false,
+        message: result.message
+      });
+    }
+    // On success: destroy session and clear cookie, then respond
+    req.session.destroy(() => {
+      res.clearCookie("connect.sid");
+      return res.json({ success: true, message: "Account deleted" });
+    });
+  } catch (err) {
+    console.error("removeAccount error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+}
+
 
 // Register function: creates a new account
 // If successful, returns JSON with success:true
@@ -66,16 +180,21 @@ const register = async (req, res) => {
     // Registration successful
     if (newAccount === 1) {
       return res.json({ message: "Login successful", success: true });
-    } 
-    // -2: username already exists 
-     else if ( newAccount === -2) {
-      return res.json({ message: "Registration failed - username already exists", success: false });
+    }
+    // -2: username already exists
+    else if (newAccount === -2) {
+      return res.json({
+        message: "Registration failed - username already exists",
+        success: false,
+      });
     }
     // -3: email already exists
-     else if ( newAccount === -3) {
-      return res.json({ message: "Registration failed - email already exists", success: false });
+    else if (newAccount === -3) {
+      return res.json({
+        message: "Registration failed - email already exists",
+        success: false,
+      });
     }
-
   } catch (err) {
     // Catch any server/db errors during registration
     console.error("Error during registration:", err);
@@ -118,7 +237,6 @@ const login = async (req, res) => {
   }
 };
 
-
 // Export controller functions to be used in routes
 module.exports = {
   login,
@@ -128,4 +246,9 @@ module.exports = {
   registerPage,
   mainPage,
   loginPage,
+  settingsPage,
+  updateUsername,
+  updateEmail,
+  updatePassword,
+  removeAccount
 };
