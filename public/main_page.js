@@ -36,14 +36,6 @@ async function getAndAddPostCard(postId) {
   else addPostCardToList(postCard);
 }
 
-/* async function renderAllPosts() {
-  const posts = await getAllPosts();
-  posts.forEach((post) => {
-    console.log(post);
-    getAndAddPostCard(post._id);
-  });
-} */
-
 
 //new addition for filtering posts by groups  
 async function renderAllPosts() {

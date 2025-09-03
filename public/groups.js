@@ -78,7 +78,7 @@ function initCreateGroupForm(onSuccess) {
                 return;
             }
 
-            // success → either let caller handle or redirect to the new group
+            // success 
             if (typeof onSuccess === "function") await onSuccess(data.groupName, data.displayName);
             else window.location.hash = `/groups/${data.groupName}`;
         } catch (err) {
