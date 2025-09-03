@@ -1,6 +1,8 @@
-import { getPostCard, getAllPosts } from "./posts.js";
-import {getCreateGroupWindow, getGroupWindow, initCreateGroupForm} from "./groups.js"
 
+import { renderAllPosts , getPostCard, getAllPosts} from "./posts.js";
+import {getCreateGroupWindow, getGroupWindow , initCreateGroupForm} from "./groups.js"
+import { renderContentWindow } from "./utils/renderer.js";
+import { routes } from "./utils/routes.js";
 const contentWindow = document.getElementById('content-window');
 
 
@@ -15,56 +17,10 @@ const contentWindow = document.getElementById('content-window');
 //   groupName = postList.dataset.group;
 // } 
 
-function addPostCardToList(postCard) {
-  const postList = document.getElementById("post-list");
-  console.log("here")
-  let liElem = document.createElement("li");
-  liElem.classList.add("post-list-item");
-
-  liElem.innerHTML = postCard;
-  postList.appendChild(liElem);
-}
-
-async function getAndAddPostCard(postId) {
-  let postCard = await getPostCard(postId);
-  let attemptNum = 0
-  while (!postCard && attemptNum++ < 3) {
-    postCard = await getPostCard(postId);
-  }
-
-  if (!postCard) console.error(`failed getting post ${postId}`);
-  else addPostCardToList(postCard);
-}
 
 
-//new addition for filtering posts by groups  
-async function renderAllPosts() {
-  let posts;
 
-  // if (groupName) {
-  //   posts = await getAllPosts(); //will be switched to getPostsByGroup(groupName)
-  // } else {
-    posts = await getAllPosts();
-  // }
-
-  if (!Array.isArray(posts)) {
-    postList.innerHTML = "<li class='post-list-item'> Error: could not load posts</li>";
-    return;
-  }
-
-  if (posts.length === 0) {
-    postList.innerHTML = "<li class='post-list-item'> No posts available</li>";
-    return;
-  }
-
-  posts.forEach((post) => {
-    console.log(post); 
-    getAndAddPostCard(post._id);
-  });
-}
-
-
-renderAllPosts();
+//renderAllPosts();
 
 const logoutBtn = document.getElementById("leaveBtn");
 const logoutToastEl = document.getElementById("logoutToast");
@@ -86,7 +42,8 @@ document.getElementById("confirmLogout").addEventListener("click", async () => {
     const data = await res.json();
 
     if (data.success) {
-      window.location.href = "/user/login";
+      // window.location.href = "/user/login";
+       window.location.href = routes.users.login;
     } else {
       console.error("Logout failed");
     }
@@ -110,21 +67,25 @@ const sideGroups = [...document.getElementsByClassName('side-nav-group')]
 sideGroups.forEach(elem => {
   elem.addEventListener('click', async (e) => {
     const groupName = e.target.closest('button').id;
-    renderGroupWindow(groupName);
+    renderContentWindow(routes.groups.groupName(groupName))
+    // renderGroupWindow(groupName);
+    //  window.location.hash = `groups/${groupName}`
   })
 });
+
+
 
 const createGroupBtn = document.getElementById('create-group-btn');
 
 createGroupBtn.addEventListener('click', async () => {
-  contentWindow.innerHTML = await getCreateGroupWindow();
-  initCreateGroupForm (async(groupName) => {
-    await renderGroupWindow(groupName);
+contentWindow.innerHTML = await getCreateGroupWindow();
+initCreateGroupForm (async(groupName) => {
+await renderGroupWindow(groupName);
     
   });
 });
 
-
-
-
+window.addEventListener('DOMContentLoaded', async () => {
+  await renderContentWindow(window.location.hash.substring(1))
+})
 
