@@ -1,5 +1,10 @@
 //first is also default
-const routeDefenitions = ["/main-feed", "/groups/new", "/groups/:groupName"];
+const routeDefenitions = [
+  "/main-feed",
+  "/groups/new",
+  "/groups/:groupName",
+  "/user/settings",
+];
 
 /**
  *
@@ -16,8 +21,6 @@ function pathToRegex(path) {
     }) +
     "$";
 
-  console.log(regex);
-
   return { regex: new RegExp(regex), keys };
 }
 
@@ -28,7 +31,7 @@ const routeIdentifiers = routeDefenitions.map((path) => pathToRegex(path));
  * @param {String} path
  * @returns
  */
-async function getContentWindow(path) {
+async function getHtmlFromPath(path) {
   try {
     const res = await fetch(path);
 
@@ -64,6 +67,7 @@ async function runInnerScripts(scriptContainer) {
  * @param {String} path
  */
 async function renderContentWindow(path) {
+  console.log("attempting to get path: " + path);
   if (typeof path === "string" && path[0] !== "/") {
     path = "/" + path;
   }
@@ -75,15 +79,20 @@ async function renderContentWindow(path) {
   }
 
   //default path in case of no match
-  if (!match) path = routeDefenitions[0]; // main-feed
+  if (!match) {
+    console.error(`renderer found no match for the path: ${path}
+    rendering ${routeDefenitions[0]} instead
+    update legal paths in renderer if this path is desiered`);
+    path = routeDefenitions[0];
+  } // main-feed
 
   const contentWindow = document.getElementById("content-window");
 
-  contentWindow.innerHTML = await getContentWindow(path);
+  contentWindow.innerHTML = await getHtmlFromPath(path);
 
   window.location.hash = path;
 
   await runInnerScripts(contentWindow);
 }
 
-export { renderContentWindow };
+export { renderContentWindow, getHtmlFromPath };
