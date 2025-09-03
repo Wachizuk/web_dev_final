@@ -1,8 +1,8 @@
-import { renderAllPosts } from "./posts.js";
-import {getCreateGroupWindow, getGroupWindow} from "./groups.js"
+
+import { renderAllPosts , getPostCard, getAllPosts} from "./posts.js";
+import {getCreateGroupWindow, getGroupWindow , initCreateGroupForm} from "./groups.js"
 import { renderContentWindow } from "./utils/renderer.js";
 import { routes } from "./utils/routes.js";
-
 const contentWindow = document.getElementById('content-window');
 
 
@@ -57,6 +57,7 @@ document.getElementById("confirmLogout").addEventListener("click", async () => {
 async function renderGroupWindow(groupName) {
     const groupWindow = await getGroupWindow(groupName);
     contentWindow.innerHTML = groupWindow;
+    window.location.hash = `/groups/${groupName}`;
     renderAllPosts();
 }
 
@@ -77,10 +78,14 @@ sideGroups.forEach(elem => {
 const createGroupBtn = document.getElementById('create-group-btn');
 
 createGroupBtn.addEventListener('click', async () => {
-  renderContentWindow(routes.groups.new);
+contentWindow.innerHTML = await getCreateGroupWindow();
+initCreateGroupForm (async(groupName) => {
+await renderGroupWindow(groupName);
+    
+  });
 });
-
 
 window.addEventListener('DOMContentLoaded', async () => {
   await renderContentWindow(window.location.hash.substring(1))
 })
+
