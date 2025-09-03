@@ -1,7 +1,8 @@
 // Import functions from other modules
 import { getPostCard, getAllPosts } from "./posts.js";
-import { getCreateGroupWindow, getGroupWindow } from "./groups.js";
 import { getSettingWindow , initSettingsHandlers } from "./profile-menu/settings.js";
+import {getCreateGroupWindow, getGroupWindow, initCreateGroupForm} from "./groups.js"
+
 
 // Main content window container
 const contentWindow = document.getElementById('content-window');
@@ -31,8 +32,10 @@ async function getAndAddPostCard(postId) {
   else addPostCardToList(postCard);
 }
 
+
 // Render all posts into the post list
 // Supports group filtering in the future (currently always loads all posts)
+//new addition for filtering posts by groups  
 async function renderAllPosts() {
   let posts;
 
@@ -67,9 +70,10 @@ renderAllPosts();
 
 // Render group window inside the content area and reload posts
 async function renderGroupWindow(groupName) {
-  const groupWindow = await getGroupWindow(groupName);
-  contentWindow.innerHTML = groupWindow;
-  renderAllPosts();
+    const groupWindow = await getGroupWindow(groupName);
+    contentWindow.innerHTML = groupWindow;
+    window.location.hash = `/groups/${groupName}`;
+    renderAllPosts();
 }
 
 // Render settings window inside the content area
@@ -93,4 +97,8 @@ sideGroups.forEach(elem => {
 const createGroupBtn = document.getElementById('create-group-btn');
 createGroupBtn.addEventListener('click', async () => {
   contentWindow.innerHTML = await getCreateGroupWindow();
+  initCreateGroupForm (async(groupName) => {
+    await renderGroupWindow(groupName);
+    
+  });
 });

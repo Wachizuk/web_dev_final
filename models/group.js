@@ -1,8 +1,19 @@
 const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
-const groupSchema = new mongoose.Schema({
-  groupName: { type: String, required: true, unique: true },  // for URL ("group-number-1")
-  displayName: { type: String, required: true },              // for UI ("Group Number 1")
-});
+const groupSchema = new mongoose.Schema(
+  {
+    groupName: { type: String, required: true, unique: true, index: true, trim: true }, 
+    displayName: { type: String, default: "", required: true },
+    description: { type: String, default: "" },
+  
+    members: {
+    admins: [{ type: Schema.Types.ObjectId, ref: "user", required: true }],
+    managers: [{ type: Schema.Types.ObjectId, ref: "user", default: [] }],
+    plainUsers: [{ type: Schema.Types.ObjectId, ref: "user", default: [] }],
+  }, // admins, managers, plain users
+  },
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("Group", groupSchema);
