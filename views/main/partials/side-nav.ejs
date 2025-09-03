@@ -71,7 +71,7 @@
           src="/images/team-placeholder.png"
           alt="group icon"
         />
-        <span class="side-nav-option-name"><%= g.displayName %></span>
+        <span class="side-nav-option-name"><%= g.displayName || g.groupName %></span>
       </button>
     </li>
     <% }) %>
