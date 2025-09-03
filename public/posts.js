@@ -41,4 +41,60 @@ async function getPostCard(postId) {
     }
 }
 
-export {getPostCard, getPost, getAllPosts}
+function addPostCardToList(postCard) {
+  const postList = document.getElementById("post-list");
+  console.log("here")
+  let liElem = document.createElement("li");
+  liElem.classList.add("post-list-item");
+
+  liElem.innerHTML = postCard;
+  postList.appendChild(liElem);
+}
+
+async function getAndAddPostCard(postId) {
+  let postCard = await getPostCard(postId);
+  let attemptNum = 0
+  while (!postCard && attemptNum++ < 3) {
+    postCard = await getPostCard(postId);
+  }
+
+  if (!postCard) console.error(`failed getting post ${postId}`);
+  else addPostCardToList(postCard);
+}
+
+/* async function renderAllPosts() {
+  const posts = await getAllPosts();
+  posts.forEach((post) => {
+    console.log(post);
+    getAndAddPostCard(post._id);
+  });
+} */
+
+
+//new addition for filtering posts by groups  
+async function renderAllPosts() {
+  let posts;
+
+  // if (groupName) {
+  //   posts = await getAllPosts(); //will be switched to getPostsByGroup(groupName)
+  // } else {
+    posts = await getAllPosts();
+  // }
+
+  if (!Array.isArray(posts)) {
+    postList.innerHTML = "<li class='post-list-item'> Error: could not load posts</li>";
+    return;
+  }
+
+  if (posts.length === 0) {
+    postList.innerHTML = "<li class='post-list-item'> No posts available</li>";
+    return;
+  }
+
+  posts.forEach((post) => {
+    console.log(post); 
+    getAndAddPostCard(post._id);
+  });
+}
+
+export {getPostCard, getPost, getAllPosts, renderAllPosts}

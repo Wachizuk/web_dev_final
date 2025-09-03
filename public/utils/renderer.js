@@ -1,0 +1,89 @@
+//first is also default
+const routeDefenitions = ["/main-feed", "/groups/new", "/groups/:groupName"];
+
+/**
+ *
+ * @param {String} path
+ */
+function pathToRegex(path) {
+  const keys = [];
+  // the g makes it match all, we take each instance of :something and replace it with the regex we want
+  const regex =
+    "^" +
+    path.replace(/:[^/]+/g, (match) => {
+      keys.push(match.replace(":", ""));
+      return "([^/]+)";
+    }) +
+    "$";
+
+  console.log(regex);
+
+  return { regex: new RegExp(regex), keys };
+}
+
+const routeIdentifiers = routeDefenitions.map((path) => pathToRegex(path));
+
+/**
+ *  gets the content window that matches the path, default is main-feed
+ * @param {String} path
+ * @returns
+ */
+async function getContentWindow(path) {
+  try {
+    const res = await fetch(path);
+
+    if (!res.ok) {
+      throw new Error(`response status code: ${res.status}`);
+    }
+
+    return res.text();
+  } catch (err) {
+    console.error(
+      `failed getting content window for ${path}, error message: ${err.message}`
+    );
+  }
+}
+
+async function runInnerScripts(scriptContainer) {
+  //when a script is added via js it gets run,
+  // we copy the original and replace it to make it run
+  scriptContainer.querySelectorAll("script").forEach((script) => {
+    const scriptCopy = document.createElement("script");
+    scriptCopy.type = script.type;
+    // the + "?t=" + Date.now() is important,
+    //  without it the script will run only the first time
+    scriptCopy.src = script.src + "?t=" + Date.now();
+    scriptCopy.async = script.async;
+
+    script.parentNode.replaceChild(scriptCopy, script);
+  });
+}
+
+/**
+ * renders the content window according to path and updates window.location.hash to path
+ * @param {String} path
+ */
+async function renderContentWindow(path) {
+  if (typeof path === "string" && path[0] !== "/") {
+    path = "/" + path;
+  }
+
+  let match = false;
+  for (let index = 0; index < routeIdentifiers.length; index++) {
+    match = path.match(routeIdentifiers[index].regex);
+    if (match) break;
+  }
+
+  //default path in case of no match
+  if (!match) path = routeDefenitions[0]; // main-feed
+
+  const contentWindow = document.getElementById("content-window");
+
+  contentWindow.innerHTML = await getContentWindow(path);
+
+  window.location.hash = path;
+
+  await runInnerScripts(contentWindow);
+}
+
+export { renderContentWindow };

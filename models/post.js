@@ -21,7 +21,7 @@ const commentSchema = new mongoose.Schema(
       required: true,
     },
     content: { type: String, required: true }, //currently text only for simplisity
-    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
   },
   { // adds createdAt and updatedAt with auto updates only on comment change
     timestamps: true, 
@@ -38,6 +38,8 @@ const postSchema = new mongoose.Schema({
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   comments: [commentSchema],
 }, {timestamps: true});
+
+
 
 //index for searching posts by keywords
 postSchema.index({title: "text", "content.value": "text"})
