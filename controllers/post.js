@@ -39,7 +39,7 @@ const getPostCardById = async (req, res) => {
     console.error(err.message);
     res.status(500).json({ error: "server error ocurred" });
   }
-  console.log(post);
+
   if (post) {
     //user should not know who liked the post except for himself
     post.likedByUser = post.likes.includes(req.session._id);
@@ -76,7 +76,6 @@ const getPostFile = async (req, res) => {
 
 // renders the main feed page this way views/main/base knows when to use main-feed 
 const renderMainFeed = async (req, res) => {
-  console.log("here")
   res.render("main/partials/main-feed", {});
 };
 

@@ -16,7 +16,9 @@ const posts = {
 
 const users = {
         login: `${base.users}/login`,
-        register: `${base.users}/register`
+        register: `${base.users}/register`,
+        logout: `${base.users}/logout`,
+        settings: `${base.users}/settings`
     }
 
 

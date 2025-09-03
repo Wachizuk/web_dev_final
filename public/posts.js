@@ -43,7 +43,6 @@ async function getPostCard(postId) {
 
 function addPostCardToList(postCard) {
   const postList = document.getElementById("post-list");
-  console.log("here")
   let liElem = document.createElement("li");
   liElem.classList.add("post-list-item");
 
@@ -92,7 +91,6 @@ async function renderAllPosts() {
   }
 
   posts.forEach((post) => {
-    console.log(post); 
     getAndAddPostCard(post._id);
   });
 }
