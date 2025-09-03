@@ -76,13 +76,8 @@ const getPostFile = async (req, res) => {
 
 // renders the main feed page this way views/main/base knows when to use main-feed 
 const renderMainFeed = async (req, res) => {
-  const groups = await groupService.getAllGroups();
-  res.render("main/base", {
-    email: req.session.email,
-    username: req.session.username,
-    feedPartial: "main", //tells base.ejs to show main-feed
-    groups,
-  });
+  console.log("here")
+  res.render("main/partials/main-feed", {});
 };
 
 module.exports = { getPostById, getPostCardById, getAllPosts, getPostFile, renderMainFeed };

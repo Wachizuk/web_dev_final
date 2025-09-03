@@ -66,6 +66,24 @@ function formatPostDate(postDate) {
   return `${day}/${month}/${year} ${minutes}:${hours}`;
 }
 
+
+function getPostPermissions(PostId, AccountId) {
+
+}
+
+//TODO: update post (owner only), delete post (owner only), add comment, like post,
+/**
+ * update post according to given fields
+ * @param {Object} post
+ * @param {String} post._id - id of post to update
+ * 
+ */
+// function UpdatePost(post) {
+//   const post = getPostById(post._id);
+//   if(!post) throw new Error("post not found");
+//   post
+// }
+
 module.exports = {
   createPost,
   getPostById,
