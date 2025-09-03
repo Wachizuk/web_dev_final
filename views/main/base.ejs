@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="/main_page.css" />
     <title>The Village - Main Page</title>
   </head>
- <%- include('partials/logout-toast', {}) %>
+  <%- include('partials/logout-toast', {}) %>
   <body>
     <%- include('partials/top-nav', {email , username }) %>
 
@@ -37,6 +37,8 @@
       integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
       crossorigin="anonymous"
     ></script>
+    <script type="module" src="/profile-menu/settings.js" ></script>
+    <script type="module" src="/profile-menu/logout.js"></script>
     <script type="module" src="/main_page.js"></script>
   </body>
 </html>

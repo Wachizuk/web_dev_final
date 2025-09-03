@@ -1,6 +1,7 @@
 const { get } = require("mongoose");
-const User = require("../models/user"); 
+const User = require("../models/user");
 const Validator = require("./validator");
+// const { changeUsername } = require("../controllers/user");
 
 const getUserByEmail = async (email) => {
   return await User.findOne({ email: email.toLowerCase() });
@@ -20,6 +21,145 @@ const getEmail = async (id) => {
 const getUsername = async (id) => {
   const user = await getUserById(id);
   return user ? user.username : null;
+};
+
+// Change username service
+const changeUsername = async (userId, newUsername) => {
+  // Validate username format (no spaces, not empty, etc.)
+  if (!Validator.validateUsername(newUsername)) {
+    return { success: false, code: 400, message: "Invalid username format" };
+  }
+
+  // Find user by ID
+  const user = await getUserById(userId);
+  if (!user) {
+    return { success: false, code: 404, message: "User not found" };
+  }
+
+  // Prevent updating to the same username
+  if (user.username === newUsername) {
+    return {
+      success: false,
+      code: 400,
+      message: "Username is the same as current",
+    };
+  }
+
+  try {
+    // Update and save new username
+    user.username = newUsername;
+    await user.save();
+
+    return { success: true, user };
+  } catch (err) {
+    // Handle duplicate key error (username already exists)
+    if (err.code === 11000) {
+      return { success: false, code: 409, message: "Username already in use" };
+    }
+
+    // Log and return generic server error
+    console.error("changeUsername error:", err);
+    return { success: false, code: 500, message: "Unexpected server error" };
+  }
+};
+
+// Change email service
+const changeEmail = async (userId, newEmail) => {
+  // Validate email format
+  if (!Validator.validateEmail(newEmail)) {
+    return { success: false, code: 400, message: "Invalid email format" };
+  }
+  // Change password service
+
+  // Find user by ID
+  const user = await getUserById(userId);
+  if (!user) {
+    return { success: false, code: 404, message: "User not found" };
+  }
+
+  // Prevent updating to the same email
+  if (user.email === newEmail) {
+    return {
+      success: false,
+      code: 400,
+      message: "Email is the same as current",
+    };
+  }
+
+  try {
+    // Update and save new email
+    user.email = newEmail;
+    await user.save();
+
+    return { success: true, user };
+  } catch (err) {
+    // Handle duplicate key error (email already exists)
+    if (err.code === 11000) {
+      return { success: false, code: 409, message: "Email already in use" };
+    }
+
+    // Log and return generic server error
+    console.error("changeEmail error:", err);
+    return { success: false, code: 500, message: "Unexpected server error" };
+  }
+};
+
+// Change password service
+const changePassword = async (userId, newPassword) => {
+  // Validate Password format
+  if (!Validator.validatePassword(newPassword)) {
+    return { success: false, code: 400, message: "Invalid Password format" };
+  }
+  // Change password service
+
+  // Find user by ID
+  const user = await getUserById(userId);
+  if (!user) {
+    return { success: false, code: 404, message: "User not found" };
+  }
+
+  // Prevent updating to the same Password
+  if (user.password === newPassword) {
+    return {
+      success: false,
+      code: 400,
+      message: "Password is the same as current",
+    };
+  }
+
+  try {
+    // Update and save new Password
+    user.password = newPassword;
+    await user.save();
+    return { success: true, user };
+  } catch (err) {
+    console.error("changePassword error:", err);
+    return { success: false, code: 500, message: "Unexpected server error" };
+  }
+};
+
+// Delete Account Service
+const deleteAccount = async (userId, password) => {
+  try {
+    // Load user by ID
+    const user = await getUserById(userId);
+    if (!user) {
+      return { success: false, code: 404, message: "User not found" };
+    }
+
+    // Optional: require password confirmation 
+    if (typeof password === "string" && password.length > 0 && user.password !== password) {
+      return { success: false, code: 401, message: "Wrong password" };
+    }
+
+    // Delete the user document
+    await user.deleteOne();
+
+    return { success: true, message: "Account deleted" };
+  } catch (err) {
+    console.error("deleteAccount error:", err);
+    return { success: false, code: 500, message: "Unexpected server error" };
+  }
 };
 
 /**
@@ -76,4 +216,8 @@ module.exports = {
   getUsername,
   login,
   register,
+  changeUsername,
+  changeEmail,
+  changePassword,
+  deleteAccount,
 };
