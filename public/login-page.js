@@ -1,5 +1,5 @@
-const registerBtn = document.getElementById("registerBtn");
 
+const registerBtn = document.getElementById("registerBtn");
 // Define the URLS
 const urlLogin  = "/user/login";
 const urlRegister = "/user/register";

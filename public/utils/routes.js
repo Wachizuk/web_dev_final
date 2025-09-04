@@ -21,8 +21,6 @@ const users = {
         settings: `${base.users}/settings`
     }
 
-
-
 const routes = {
     groups,
     posts,
