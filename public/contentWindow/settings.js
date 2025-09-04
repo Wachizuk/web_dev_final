@@ -1,8 +1,8 @@
 //URLS
-const urlChangeUsername = "/user/change-username";
-const urlChangeEmail = "/user/change-email";
-const urlChangePassword = "/user/change-password";
-const urlDeleteAccont = "/user/delete-account";
+const urlChangeUsername = "/user/change/username";
+const urlChangeEmail = "/user/change/email";
+const urlChangePassword = "/user/change/password";
+const urlDeleteAccont = "/user/delete/account";
 
 const usernameForm = document.getElementById("updateUsernameForm");
 const emailForm = document.getElementById("updateEmailForm");
