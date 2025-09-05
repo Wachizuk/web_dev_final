@@ -58,16 +58,16 @@ app.use('/', baseRoute);
 const groupsRoute = require("./routes/groups");
 app.use("/groups", groupsRoute);
 
-//after routes so overides will be possible for default paths
-app.use(express.static('public'));
-
+// your existing router for POST/GET avatar remains fine
+const uploadsRoute = require('./routes/uploads');
+app.use('/uploads', uploadsRoute);
 
 // serve the raw files under /uploads 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// your existing router for POST/GET avatar remains fine
-const uploadsRoute = require('./routes/uploads');
-app.use('/uploads', uploadsRoute);
+//after routes so overides will be possible for default paths
+app.use(express.static('public'));
+
 
 
 // ---------------- CONNECT TO DATABASE ----------------
