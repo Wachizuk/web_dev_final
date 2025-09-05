@@ -14,6 +14,7 @@ const viewMainPage = "main/base";
 const viewLogin = "login-page/base";
 const viewRegister = "login-page/register-page";
 const viewSettings = "main/partials/settings";
+const viewProfile = "main/partials/profile"
 
 // Middleware to check if a user is logged in based on session._id
 // If logged in → continue, otherwise redirect to login page
@@ -54,6 +55,19 @@ async function loginPage(req, res) {
 // Render register page
 async function registerPage(req, res) {
   res.render(viewRegister);
+}
+
+//Render profile page 
+async function profilePage(req, res ) {
+  const userId = req.session._id;
+  const email = await userService.getEmail(userId);
+  const username = await userService.getUsername(userId);
+  const friends = await userService.getFriends(userId);
+
+  // Fetch avatarUrl as well
+  const avatarUrl = await userService.getAvatarUrl(userId);
+
+  res.render(viewProfile , {userId , email , username , friends ,avatarUrl});
 }
 
 //Render settings page
@@ -250,5 +264,6 @@ module.exports = {
   updateUsername,
   updateEmail,
   updatePassword,
-  removeAccount
+  removeAccount , 
+  profilePage
 };
