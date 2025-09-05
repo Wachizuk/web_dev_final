@@ -1,7 +1,5 @@
-const { get } = require("mongoose");
 const User = require("../models/user");
 const Validator = require("./validator");
-// const { changeUsername } = require("../controllers/user");
 
 const getUserByEmail = async (email) => {
   return await User.findOne({ email: email.toLowerCase() });
@@ -23,6 +21,24 @@ const getUsername = async (id) => {
   return user ? user.username : null;
 };
 
+async function getAvatarUrl(userId) {
+  const user = await User.findById(userId).select('avatarUrl');
+  return user?.avatarUrl || '';
+}
+
+const getFriends = async (id) => {
+  try {
+    const user = await User.findById(id)
+      .populate("friends", "username avatarUrl");
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user.friends;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
 
 // Change username service
 const changeUsername = async (userId, newUsername) => {
@@ -148,8 +164,12 @@ const deleteAccount = async (userId, password) => {
       return { success: false, code: 404, message: "User not found" };
     }
 
-    // Optional: require password confirmation 
-    if (typeof password === "string" && password.length > 0 && user.password !== password) {
+    // Optional: require password confirmation
+    if (
+      typeof password === "string" &&
+      password.length > 0 &&
+      user.password !== password
+    ) {
       return { success: false, code: 401, message: "Wrong password" };
     }
 
@@ -163,14 +183,17 @@ const deleteAccount = async (userId, password) => {
   }
 };
 
-
 // ----------------helper functions to get user ids by usernames (used for groups)----------------
 
 // cleans input and makes sure is a valid array
 function toUsernameArray(input) {
-  if (Array.isArray(input)) return input.map(s => String(s||"").trim()).filter(Boolean); //cleans input and makes sure is a valid array
-  if (typeof input === "string") 
-    return input.split(",").map(s => s.trim()).filter(Boolean); //if string, split by comma and clean
+  if (Array.isArray(input))
+    return input.map((s) => String(s || "").trim()).filter(Boolean); //cleans input and makes sure is a valid array
+  if (typeof input === "string")
+    return input
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean); //if string, split by comma and clean
   return [];
 }
 
@@ -178,22 +201,26 @@ function toUsernameArray(input) {
 async function findUserIdsByUsernames(input) {
   const usernames = toUsernameArray(input); //cleans input and makes sure is a valid array
   if (usernames.length === 0) return []; //if empty
-  const users = await User.find({ username: { $in: usernames } }, { _id: 1 }).lean(); //fetch all users with one query return only _ids
-  return users.map(u => u._id); //return array of ObjectIds
+  const users = await User.find(
+    { username: { $in: usernames } },
+    { _id: 1 }
+  ).lean(); //fetch all users with one query return only _ids
+  return users.map((u) => u._id); //return array of ObjectIds
 }
 
-// return just the invalid usernames (for invalid usernames allert) 
+// return just the invalid usernames (for invalid usernames allert)
 async function findMissingUsernames(input) {
   const usernames = toUsernameArray(input);
   if (usernames.length === 0) return [];
-  const found = await User.find({ username: { $in: usernames } }, { username: 1 }).lean(); 
-  const ok = new Set(found.map(u => u.username)); //set of valid usernames
-  return usernames.filter(u => !ok.has(u)); //return only invalid usernames
+  const found = await User.find(
+    { username: { $in: usernames } },
+    { username: 1 }
+  ).lean();
+  const ok = new Set(found.map((u) => u.username)); //set of valid usernames
+  return usernames.filter((u) => !ok.has(u)); //return only invalid usernames
 }
 
 //----------------------------------------end of helper functions----------------------------------------
-
-
 
 /**
  * creates a user in db if params are valid and username is not taken
@@ -256,4 +283,6 @@ module.exports = {
   toUsernameArray,
   findUserIdsByUsernames,
   findMissingUsernames,
+  getFriends,
+  getAvatarUrl,
 };

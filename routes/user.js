@@ -18,6 +18,9 @@ router.route("/register")
 .get(userController.registerPage);
 
 // ---------------- PROFILE ROUTE ----------------
+router.route("/profile")
+.get(userController.isLoggedIn , userController.profilePage)
+
 router.route("/settings")
 .get(userController.isLoggedIn, userController.settingsPage)
 

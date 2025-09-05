@@ -2,6 +2,7 @@ require('custom-env').env('', './config');
 const express = require('express');
 const connectDB = require('./config/db');
 const cors = require('cors');
+const path = require('path');
 
 //middleware imports
 
@@ -59,6 +60,15 @@ app.use("/groups", groupsRoute);
 
 //after routes so overides will be possible for default paths
 app.use(express.static('public'));
+
+
+// serve the raw files under /uploads 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// your existing router for POST/GET avatar remains fine
+const uploadsRoute = require('./routes/uploads');
+app.use('/uploads', uploadsRoute);
+
 
 // ---------------- CONNECT TO DATABASE ----------------
 // Connect to MongoDB using the connectDB function
