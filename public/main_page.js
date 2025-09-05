@@ -37,6 +37,11 @@ document.getElementById('settingsBtn').addEventListener('click', async () => {
   await renderContentWindow(routes.users.settings)});
 
 
+document.getElementById('profile-btn').addEventListener('click', async () => {
+  await renderContentWindow(routes.users.profile )});
+
+
+  
 // Attach click listeners to all side group navigation buttons
 const sideGroups = [...document.getElementsByClassName('side-nav-group')];
 sideGroups.forEach(elem => {

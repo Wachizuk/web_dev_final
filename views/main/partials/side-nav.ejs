@@ -1,7 +1,7 @@
-<% const gList = Array.isArray(locals.groups) ? locals.groups : []; %>
+<% const gList=Array.isArray(locals.groups) ? locals.groups : []; %>
 
-<div id="side-nav" class="col-2">
-  <!-- TEMPLATE FOR SIDE_NAV_LIST 18/08/2025 - initial design
+  <div id="side-nav" class="col-2">
+    <!-- TEMPLATE FOR SIDE_NAV_LIST 18/08/2025 - initial design
              <ul class="side-nav-list">
               <li class="side-nav-list-item">
                 <h4 class="side-list-title">
@@ -25,6 +25,7 @@
               </li>
             </ul>
                 -->
+
   <ul class="side-nav-list">
     <li class="side-nav-list-item">
       <h4 class="side-list-title">
@@ -44,6 +45,12 @@
         <span class="side-nav-option-name">Popular</span>
       </button>
     </li>
+      <li class="side-nav-list-item">
+        <button id="profile-btn" class="side-nav-option d-flex align-items-center gap-2 text-decoration-none">
+          <i class="bi bi-person-circle side-nav-option-icon"></i>
+          <span class="side-nav-option-name">Profile</span>
+        </button>
+      </li>
     <li class="side-nav-list-item">
       <button
         id="create-group-btn"
@@ -84,3 +91,5 @@
     <% }) %>
   </ul>
 </div>
+
+
