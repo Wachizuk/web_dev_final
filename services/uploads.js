@@ -1,8 +1,10 @@
 const fs = require("fs");
 const path = require("path");
+const User = require("../models/user"); // make sure this path is correct
 
 // Directory where avatars will be stored (under /uploads/avatars)
 const AVATARS_DIR = path.join(__dirname, "..", "uploads", "avatars");
+const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
 
 // Make sure the directory exists
 if (!fs.existsSync(AVATARS_DIR)) {
@@ -14,30 +16,41 @@ if (!fs.existsSync(AVATARS_DIR)) {
  * File will be saved as: userId.extension
  * Returns the public URL so it can be stored in MongoDB (e.g. /uploads/avatars/alice.jpg).
  */
-const saveImage = async (userId, buffer, contentType) => {
-  if (!buffer || !buffer.length) throw new Error("Empty body");
+
+const saveAvatarImage = async (userId, buffer, contentType) => {
+  const url = await saveImage(buffer , contentType , userId , AVATARS_DIR );
+  await User.updateOne({ _id: userId }, { $set: { avatarUrl: url } });
+  return url;
+};
+
+// Generic image save function 
+const saveImage = async ( buffer, contentType ,fileName, savePath) => {
+  if (!buffer?.length) throw new Error("Empty body");
 
   let ext = "";
-  if (contentType === "image/png") ext = "png";
-  else if (contentType === "image/jpeg") ext = "jpg";
-  else if (contentType === "image/webp") ext = "webp";
+  if (contentType === "image/png") ext = ".png";
+  else if (contentType === "image/jpeg") ext = ".jpg";
+  else if (contentType === "image/webp") ext = ".webp";
   else throw new Error("Unsupported Content-Type");
-
-  const filename = `${userId}.${ext}`;
-  const filePath = path.join(AVATARS_DIR, filename);
-
-  // Write the image to disk
+  const filename = fileName + ext;
+  const filePath = path.join(savePath, filename);
+  console.log("FILE NAME : "+fileName);
+  console.log("FILE PATH : "+filePath);
+  console.log("UPLOADS DIR : "+ UPLOADS_DIR)
+  if(!filePath.startsWith(UPLOADS_DIR))
+  {
+    throw new Error("forbbiden path " + savePath);
+  }
   await fs.promises.writeFile(filePath, buffer);
-
-  // Return a public URL (note: /uploads/avatars, with 's')
-  return `/uploads/avatars/${filename}`;
+  return filePath.replace(UPLOADS_DIR, '/uploads');
 };
+
 
 /**
  * Return the absolute path of the avatar by filename.
  * If file doesn't exist, return the placeholder avatar.
  */
-const getImagePathByFilename = async (filename) => {
+const getAvatarPathByFilename = async (filename) => {
   const abs = path.join(AVATARS_DIR, filename);
   try {
     await fs.promises.access(abs, fs.constants.R_OK);
@@ -48,4 +61,4 @@ const getImagePathByFilename = async (filename) => {
   }
 };
 
-module.exports = { saveImage, getImagePathByFilename };
+module.exports = { saveAvatarImage, saveImage, getAvatarPathByFilename };
