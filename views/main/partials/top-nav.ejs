@@ -29,19 +29,51 @@
       </ul>
     </div>
 
-    <!-- middle end
-         right side start -->
+    <!-- middle end -->
+    
+<!-- right side start -->
     <div id="top-nav-right-col" class="col-3 nav-col">
-      <form id="top-nav-search-form" class="" role="search">
-        <div id="top-nav-search-group" class="input-group search-group">
-          <input dir="rtl" id="top-nav-search-input" class="form-control search-bar" type="search"
-            placeholder="search..." aria-label="Search" />
-          <span id="top-nav-search-icon-wrap" class="input-group-text search-bar-img">
-            <i id="top-nav-search-icon" class="bi bi-search"></i>
+      <form id="top-nav-search-form" role="search" class="d-flex justify-content-end">
+        <div id="top-nav-search-group" class="input-group input-group-sm" style="max-width: 520px;">
+          <!-- scope segmented control -->
+          <span class="input-group-text p-0 bg-transparent border-end-0">
+            <div id="top-nav-search-scope" class="btn-group" role="group" aria-label="Search scope">
+              <!-- Users (default) -->
+              <input type="radio" class="btn-check" name="searchScope" id="scope-user" value="user" autocomplete="off"
+                checked>
+              <label class="btn btn-outline-primary px-2" for="scope-user" title="Users">
+                <i class="bi bi-person"></i>
+              </label>
+              <!-- Groups -->
+              <input type="radio" class="btn-check" name="searchScope" id="scope-group" value="group"
+                autocomplete="off">
+              <label class="btn btn-outline-primary px-2" for="scope-group" title="Groups">
+                <i class="bi bi-people"></i>
+              </label>
+              <!-- Posts -->
+              <input type="radio" class="btn-check" name="searchScope" id="scope-post" value="post" autocomplete="off">
+              <label class="btn btn-outline-primary px-2" for="scope-post" title="Posts">
+                <i class="bi bi-card-text"></i>
+              </label>
+            </div>
           </span>
+
+          <!-- search input (single) -->
+          <input dir="rtl" id="top-nav-search-input" class="form-control border-start-0" type="search"
+            placeholder="search..." aria-label="Search" autocomplete="off">
+
+          <!-- suggest dropdown (single) -->
+          <div id="top-nav-suggest" class="search-suggest d-none"></div>
+
+          <!-- submit button (single) -->
+          <button id="top-nav-search-icon-wrap" class="btn btn-dark" type="submit" aria-label="Search">
+            <i id="top-nav-search-icon" class="bi bi-search"></i>
+          </button>
         </div>
       </form>
     </div>
     <!-- right side end -->
+
+
   </div>
 </nav>

@@ -21,6 +21,9 @@ router.route("/register")
 router.route("/profile")
 .get(userController.isLoggedIn , userController.profilePage)
 
+router.route("/profile/:username")
+.get(userController.isLoggedIn , userController.selectedProfilePage)
+
 router.route("/settings")
 .get(userController.isLoggedIn, userController.settingsPage)
 
