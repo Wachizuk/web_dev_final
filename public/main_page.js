@@ -62,6 +62,15 @@ createPostBtn.addEventListener('click', async () => {
   await renderContentWindow(routes.posts.create);
 })
 
+const homeBtn = document.getElementById("home-btn");
+homeBtn.addEventListener('click', async () => {
+  await renderContentWindow(routes.mainFeed);
+})
+
 window.addEventListener('DOMContentLoaded', async () => {
   await renderContentWindow(window.location.hash.substring(1))
 })
+
+// window.addEventListener('hashchange', async () => {
+//   await renderContentWindow(window.location.hash.substring(1))
+// })

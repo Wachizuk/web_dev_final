@@ -1,0 +1,33 @@
+<div id="edit-post-wrap">
+    <h2 class="mb-5">Post Editor</h4>
+    <form id="edit-post-form" data-post-id="<%=postId%>">
+  <div class="mb-4">
+    <label for="input-post-title" class="form-label">Post Title</label>
+    <input type="text" name="title" class="form-control form-control-lg" id="input-post-title" />
+  </div>
+
+      <div class="mb-4">
+      <label for="input-post-group" class="form-label">Post Group</label>
+      <select class="form-select" name="" id="group-select">
+        <% if (groupName) { %>
+        <option value="">none</option>
+        <option value="<%= groupName %>" selected><%=groupName%></option>
+        <% } else { %>
+        <option value="" selected>none</option>
+        <% } %>
+      </select>
+    </div>
+  
+  <label for="content-input-list" class="form-label">Post Content</label>
+  <ul id="content-input-list"></ul>
+  <button id="add-content-input-btn" class="btn btn-secondary mb-3">add content</button>
+  <br>
+  <button id="edit-post-submit" class="btn btn-primary">Edit Post</button>
+  <br>
+  <br>
+  <button id="delete-post-btn" class="btn btn-danger">Delete Post</button>
+</form>
+</div>
+
+<script type="module" src="/contentWindow/edit-post.js"></script>
+

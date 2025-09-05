@@ -145,7 +145,7 @@ main {
     background-color: var(--bg-color-secondary);
     color: var(--color-secondary);
     padding-top: 16px;
-    font-size: 1.5rem;
+    font-size: 1rem;
     /* font size to 24px for sidenav */
 }
 
@@ -269,6 +269,12 @@ main {
 
 /* create post form page */
 #create-post-wrap {
+    justify-self: center;
+    width: 80%;
+}
+
+/* create post form page */
+#edit-post-wrap {
     justify-self: center;
     width: 80%;
 }
