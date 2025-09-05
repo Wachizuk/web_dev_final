@@ -78,9 +78,10 @@ async function createGroup(req, res) {
 
 async function groupPage(req, res) {
   const groupName = req.params.groupName;
-  //const group = await groupService.getGroupByName(groupName);
+  const group = await groupService.getGroupByName(groupName);
+  const coverUrl = group.coverFile ? `/uploads/groups/${group.coverFile}` : "";
 
-  res.render(groupFeedRoute, {groupName});
+  res.render(groupFeedRoute, {group, coverUrl});
 }
 
 

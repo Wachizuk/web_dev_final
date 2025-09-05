@@ -1,9 +1,18 @@
-<div class="row g-3">
+ <!-- top group area -->
+
+<div class="group-header">
+  <% if (coverUrl) { %>
+    <img class="group-cover" src="<%= coverUrl %>" alt="<%= group.displayName %> cover">
+  <% } %>
+</div>
+
+ <!-- 2 MAIN CONTENT COLS part -->
+<div class="row g-3"> 
   <!-- LEFT COL: posts using main_page.js -->
   <div class="col-12 col-lg-8">
     <ul id="post-list"
         class="post-list"
-        data-group="<%= groupName %>">
+        data-group="<%= group.groupName %>">
     </ul>
   </div>
 

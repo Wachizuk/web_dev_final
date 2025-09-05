@@ -1,0 +1,24 @@
+/* === Group Feed Header (banner) === */
+.group-header {
+  margin-bottom: 16px;
+}
+
+.group-header .group-cover {
+  display: block;
+  width: 100%;        
+  max-width: 100%;
+  aspect-ratio: 3 / 1;
+  object-fit: cover;  
+  border-radius: 8px; /* only if your cards already use rounded corners */
+}
+
+
+/* === 2 MAIN CONTENT COLS part === */
+
+
+
+
+
+
+
+/* === Create-Group Styling ===*/

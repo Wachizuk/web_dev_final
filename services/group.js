@@ -22,7 +22,12 @@ async function createGroup({ groupName, displayName, description, members }) {
   return await doc.save();
 }
 
-module.exports = { getAllGroups, getGroupByName, normalizeGroupName, createGroup };
+// updateOps is an object with the fields to update
+async function updateGroupByName(groupName, updateOps) {
+  return Group.findOneAndUpdate({ groupName }, updateOps, { new: true }).lean();
+}
+
+module.exports = { getAllGroups, getGroupByName, normalizeGroupName, createGroup, updateGroupByName };
 
 
 
