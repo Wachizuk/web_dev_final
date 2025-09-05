@@ -46,12 +46,18 @@
     </li>
     <li class="side-nav-list-item">
       <button
-      id="create-group-btn"
+        id="create-group-btn"
         class="side-nav-option d-flex align-items-center gap-2 text-decoration-none"
       >
         <i class="bi bi-plus-circle side-nav-option-icon"></i>
         <span class="side-nav-option-name">Create a new group</span>
-    </button>
+      </button>
+    </li>
+    <li class="side-nav-list-item">
+      <button id="create-post-btn" class="side-nav-option d-flex align-items-center gap-2 text-decoration-none">
+        <i class="bi bi-plus-circle side-nav-option-icon"></i>
+        <span class="side-nav-option-name">Create a new post</span>
+      </button>
     </li>
   </ul>
   <hr class="side-nav-hr" />
@@ -70,7 +76,9 @@
           src="/images/team-placeholder.png"
           alt="group icon"
         />
-        <span class="side-nav-option-name"><%= g.displayName || g.groupName %></span>
+        <span class="side-nav-option-name"
+          ><%= g.displayName || g.groupName %></span
+        >
       </button>
     </li>
     <% }) %>

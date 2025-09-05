@@ -34,6 +34,7 @@ const postSchema = new mongoose.Schema({
   author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   //save username directly and index for easy searching
   authorUsername: { type: String, index: true },
+  group: {type: mongoose.Schema.Types.ObjectId, ref: "Group"},
   content: [contentBlockSchema], // allows for multiple content types on same post
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   comments: [commentSchema],

@@ -1,4 +1,3 @@
-const { default: mongoose } = require("mongoose");
 const Post = require("../models/post"); // Import the User model from Mongoose
 const userService = require("./user");
 const Validator = require("./validator");
@@ -30,7 +29,7 @@ const getPostsByText = async (text) =>
  * @param {*} contentBlocks - [{type: "text/image/video", value: text/filepath}]
  * @returns - new post
  */
-async function createPost(author, title, contentBlocks) {
+async function createPost(author, title, contentBlocks, group) {
   Validator.validatePostParams(author, title, contentBlocks);
 
   const user = await userService.getUserById(author);
@@ -41,13 +40,15 @@ async function createPost(author, title, contentBlocks) {
     author: author,
     authorUsername: user.username,
     content: contentBlocks,
+    // group: group ? group : null,
+    group: null,
     likes: [],
     comments: [],
   });
 
   //save returns the newly created object
   //save with no _id field will always create
-  return await newPost.save();
+  return await postObj.save();
 }
 
 /**
@@ -66,23 +67,120 @@ function formatPostDate(postDate) {
   return `${day}/${month}/${year} ${minutes}:${hours}`;
 }
 
+const PERMISSIONS = {
+  VIEW: "view",
+  COMMENT: "comment",
+  LIKE: "like",
+  EDIT: "edit",
+  DELETE: "delete",
+  GROUP: "group",
+};
 
-function getPostPermissions(PostId, AccountId) {
+const ROLES = {
+  AUTHOR: [
+    PERMISSIONS.COMMENT,
+    PERMISSIONS.DELETE,
+    PERMISSIONS.EDIT,
+    PERMISSIONS.GROUP,
+    PERMISSIONS.LIKE,
+    PERMISSIONS.VIEW,
+  ],
+  GROUP_MANAGER: [
+    PERMISSIONS.COMMENT,
+    PERMISSIONS.GROUP,
+    PERMISSIONS.LIKE,
+    PERMISSIONS.VIEW,
+  ],
+  GUEST: [PERMISSIONS.VIEW, PERMISSIONS.LIKE, PERMISSIONS.COMMENT],
+  BLOCKED: [],
+};
 
+/**
+ *  return user permission level for the post
+ * @param {String} postId
+ * @param {String} userId
+ * @returns
+ */
+function getPostPermissions(postId, userId) {
+  try {
+    const post = getPostById(postId);
+    if (!post) {
+      const err = new Error("post not found");
+      err.code = "NOT_FOUND";
+      throw err;
+    };
+
+    if (post.author == userId) return ROLES.AUTHOR;
+    // TODO: GET GROUP ROLE OF USER AND RETURN PERMISSION ACCORDINGLY
+    // BEST WAY TO DO IS HAVE A FUNCTION FOR THAT IN GROUP SERVICE
+
+    return ROLES.GUEST;
+  } catch (err) {
+    console.error(`post with id '${postId}' does not exist`);
+    return ROLES.BLOCKED;
+  }
 }
 
 //TODO: update post (owner only), delete post (owner only), add comment, like post,
 /**
- * update post according to given fields
+ * update post according to given fields in the object, post Id must be passed
+ * will only be updated if user has required permissions (PERMISSIONS.UPDATE)
+ * CURRENTLY DOES SUPPORTS ONLY TEXT CONTENT BLOCKS, DOES NOT UPLOAD IMAGES AND VIDEOS
  * @param {Object} post
  * @param {String} post._id - id of post to update
- * 
+ * @param {String} userId - id of user that requests the update
+ * @param {String} post.title - post title
+ * @param {*} post.contentBlocks - array of content blocks according to model schema
  */
-// function UpdatePost(post) {
-//   const post = getPostById(post._id);
-//   if(!post) throw new Error("post not found");
-//   post
-// }
+async function updatePost(post, userId) {
+  const oldPost = null;
+
+  try {
+    oldPost = getPostById(post._id);
+    if (!oldPost) {
+      throw new Error(`post with id '${post._id}' does not exist`);
+    }
+  } catch (err) {
+    err.code = "NOT_FOUND";
+    throw err;
+  }
+
+  const permissions = getPostPermissions(Post._id, userId);
+  if (!permissions) {
+    const err = new Error(
+      `user '${userId}' is blocked from post '${Post._id}'`
+    );
+    err.code = "NOT_ALLOWED";
+    throw err;
+  }
+
+  if (permissions.includes(PERMISSIONS.EDIT)) {
+    oldPost.title = post.title ? post.title : oldPost.title;
+    oldPost.contentBlocks = post.contentBlocks
+      ? post.contentBlocks
+      : oldPost.contentBlocks;
+  }
+
+  return await oldPost.save();
+}
+
+/**
+ * deletes post if user has required permissions (PERMISSIONS.DELETE)
+ * @param {String} postId post id
+ * @param {String} userId user id
+ */
+async function deletePost(postId, userId) {
+  const permissions = getPostPermissions(postId, userId);
+  if (!permissions.includes(PERMISSIONS.DELETE)) {
+    const err = new Error(
+      `user '${userId} does not have permission to delete post ${postId}`
+    );
+    err.code = "NOT_ALLOWED";
+    throw err;
+  }
+
+  await Post.findByIdAndDelete(postId);
+}
 
 module.exports = {
   createPost,
@@ -92,5 +190,7 @@ module.exports = {
   getAllPostIds,
   getPostsByAuthor,
   getAllPosts,
-  formatPostDate
+  formatPostDate,
+  updatePost,
+  deletePost,
 };
