@@ -19,11 +19,6 @@ const getPostById = async (req, res) => {
   }
 
   if (post) {
-    //user should not know who liked the post except for himself
-    post.likedByUser = post.likes.includes(req.session._id);
-    post.numOfLikes = post.likes.length;
-    delete post.likes;
-
     res.json(post);
   } else {
     res.status(404).json({ error: "Post not found" });
@@ -41,7 +36,6 @@ const getPostCardById = async (req, res) => {
   }
 
   if (post) {
-    //user should not know who liked the post except for himself
     post.likedByUser = post.likes.includes(req.session._id);
     post.numOfLikes = post.likes.length;
     post.createdAtFormatted = postService.formatPostDate(post.createdAt);
@@ -79,4 +73,77 @@ const renderMainFeed = async (req, res) => {
   res.render("main/partials/main-feed", {});
 };
 
-module.exports = { getPostById, getPostCardById, getAllPosts, getPostFile, renderMainFeed };
+const createPost = async (req, res) => {
+  const author = req.session._id;
+  console.log("author is:" + author);
+  const title = req.body.title;
+  const contentBlocks = req.body.contentBlocks;
+  const group = req.session.group;
+
+  try {
+    const post = await postService.createPost(author, title, contentBlocks, group);
+    res.status(200).json(post);
+  } catch (err) {
+    switch(err.code) {
+        case "INVALID_PARAM":
+          console.log(err.message);
+          return res.status(403).json({message: err.message});
+        default:
+          console.error(err.message);
+          return res.status(500).json({message: "internal server error"})
+      }
+  }
+}
+
+const updatePostContent = async (req, res) => {
+  const userId = req.session._id;
+  const post = req.body.post;
+
+  try {
+  const updatedPost = await postService.updatePost(post, userId);
+  res.json(updatedPost);
+  } catch (err) {
+    
+      switch (err.code) {
+        case "NOT_FOUND":
+          console.log(err.message)
+          return res.status(404).json({message: "post not found"})
+        case "NOT_ALLOWED":
+          console.log(err.message)
+          return res.status(403);
+        default:
+          console.error(err.message)
+          res.status(500).json({message: "internal server error"})
+          break;
+      }
+  }
+
+}
+
+const deletePost = async (req, res) => {
+    const userId = req.session._id;
+    const postId = req.params.id;
+
+    try {
+      await postService.deletePost(postId, userId);
+      return res.status(200).json({message: "Post deleted successfully"});
+    } catch (err) {
+      switch(err.code) {
+        case "NOT_ALLOWED":
+          console.log(err.message);
+          return res.status(403).json({message: "User is not allowed to delete this post"});
+        case "NOT_FOUND":
+          console.log(err.message)
+          return res.status(404).json({message: "Post not found"});
+        default:
+          console.error(err.message);
+          return res.status(500).json({message: "internal server error"})
+      }
+    }
+}
+
+const getCreatePostWindow = async (req, res) => {
+  res.render("main/partials/create-post", {});
+}
+
+module.exports = { getPostById, getPostCardById, getAllPosts, getPostFile, renderMainFeed, updatePostContent, deletePost, createPost, getCreatePostWindow };

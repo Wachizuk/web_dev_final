@@ -25,58 +25,71 @@
               </li>
             </ul>
                 -->
-    <ul class="side-nav-list">
-      <li class="side-nav-list-item">
-        <h4 class="side-list-title">
-          Pages
-          <i class="bi bi-back"></i>
-        </h4>
-      </li>
-      <li class="side-nav-list-item">
-        <button class="side-nav-option">
-          <i class="bi bi-house side-nav-option-icon"></i>
-          <span class="side-nav-option-name">Home</span>
-        </button>
-      </li>
-      <li class="side-nav-list-item">
-        <button class="side-nav-option">
-          <i class="bi bi-arrow-up-right-circle side-nav-option-icon"></i>
-          <span class="side-nav-option-name">Popular</span>
-        </button>
-      </li>
 
+  <ul class="side-nav-list">
+    <li class="side-nav-list-item">
+      <h4 class="side-list-title">
+        Pages
+        <i class="bi bi-back"></i>
+      </h4>
+    </li>
+    <li class="side-nav-list-item">
+      <button class="side-nav-option">
+        <i class="bi bi-house side-nav-option-icon"></i>
+        <span class="side-nav-option-name">Home</span>
+      </button>
+    </li>
+    <li class="side-nav-list-item">
+      <button class="side-nav-option">
+        <i class="bi bi-arrow-up-right-circle side-nav-option-icon"></i>
+        <span class="side-nav-option-name">Popular</span>
+      </button>
+    </li>
       <li class="side-nav-list-item">
         <button id="profile-btn" class="side-nav-option d-flex align-items-center gap-2 text-decoration-none">
           <i class="bi bi-person-circle side-nav-option-icon"></i>
           <span class="side-nav-option-name">Profile</span>
         </button>
       </li>
+    <li class="side-nav-list-item">
+      <button
+        id="create-group-btn"
+        class="side-nav-option d-flex align-items-center gap-2 text-decoration-none"
+      >
+        <i class="bi bi-plus-circle side-nav-option-icon"></i>
+        <span class="side-nav-option-name">Create a new group</span>
+      </button>
+    </li>
+    <li class="side-nav-list-item">
+      <button id="create-post-btn" class="side-nav-option d-flex align-items-center gap-2 text-decoration-none">
+        <i class="bi bi-plus-circle side-nav-option-icon"></i>
+        <span class="side-nav-option-name">Create a new post</span>
+      </button>
+    </li>
+  </ul>
+  <hr class="side-nav-hr" />
+  <ul class="side-nav-list">
+    <li class="side-nav-list-item">
+      <h4 class="side-list-title">
+        Groups
+        <i class="bi bi-people"></i>
+      </h4>
+    </li>
+    <% gList.forEach(g => { %>
+    <li class="side-nav-list-item side-nav-group-list-item">
+      <button id="<%= g.groupName %>" class="side-nav-option side-nav-group">
+        <img
+          class="side-nav-option-img"
+          src="/images/team-placeholder.png"
+          alt="group icon"
+        />
+        <span class="side-nav-option-name"
+          ><%= g.displayName || g.groupName %></span
+        >
+      </button>
+    </li>
+    <% }) %>
+  </ul>
+</div>
 
-      <li class="side-nav-list-item">
-        <button id="create-group-btn" class="side-nav-option d-flex align-items-center gap-2 text-decoration-none">
-          <i class="bi bi-plus-circle side-nav-option-icon"></i>
-          <span class="side-nav-option-name">Create a new group</span>
-        </button>
-      </li>
-    </ul>
-    
-    <hr class="side-nav-hr" />
-    <ul class="side-nav-list">
-      <li class="side-nav-list-item">
-        <h4 class="side-list-title">
-          Groups
-          <i class="bi bi-people"></i>
-        </h4>
-      </li>
-      <% gList.forEach(g=> { %>
-        <li class="side-nav-list-item side-nav-group-list-item">
-          <button id="<%= g.groupName %>" class="side-nav-option side-nav-group">
-            <img class="side-nav-option-img" src="/images/team-placeholder.png" alt="group icon" />
-            <span class="side-nav-option-name">
-              <%= g.displayName || g.groupName %>
-            </span>
-          </button>
-        </li>
-        <% }) %>
-    </ul>
-  </div>
+

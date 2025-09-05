@@ -57,6 +57,11 @@ createGroupBtn.addEventListener('click', async () => {
   await renderContentWindow(routes.groups.new);
 });
 
+const createPostBtn = document.getElementById("create-post-btn");
+createPostBtn.addEventListener('click', async () => {
+  await renderContentWindow(routes.posts.create);
+})
+
 window.addEventListener('DOMContentLoaded', async () => {
   await renderContentWindow(window.location.hash.substring(1))
 })
