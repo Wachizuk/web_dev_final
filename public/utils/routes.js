@@ -20,7 +20,8 @@ const users = {
         register: `${base.users}/register`,
         logout: `${base.users}/logout`,
         settings: `${base.users}/settings` , 
-        profile: `${base.users}/profile`
+        profile: `${base.users}/profile` ,
+        selectedProfile : `${base.users}/profile/:username`
     }
 
 const routes = {

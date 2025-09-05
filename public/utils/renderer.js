@@ -5,7 +5,8 @@ const routeDefenitions = [
   "/groups/:groupName",
   "/user/settings",
   "/posts/create",
-  "/user/profile"
+  "/user/profile",
+  "/user/profile/:username" 
 ];
 
 /**

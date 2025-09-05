@@ -14,4 +14,6 @@ const rawImage = express.raw({
 router.route("/avatar/:filename",).get( userController.isLoggedIn ,uploadsController.getAvatar);
 router.route("/avatar/new").post( userController.isLoggedIn, rawImage , uploadsController.uploadAvatar);
 
+
+
 module.exports = router;
