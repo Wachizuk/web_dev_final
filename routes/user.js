@@ -46,4 +46,7 @@ router.route("/change/password")
 router.route("/delete/account")
 .delete(userController.isLoggedIn, userController.removeAccount);
 
+router.route("/change-address").post(userController.isLoggedIn,userController.updateAddress);
+
+
 module.exports = router;

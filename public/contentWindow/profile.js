@@ -31,3 +31,33 @@ fileInput.addEventListener("change", async () => {
     alert("Something went wrong");
   }
 });
+
+const replaceAdress = () => {
+  const form = document.getElementById("address-form");
+  if (!form) return;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const newAddress = form.querySelector("input").value;
+    if (!newAddress) return;
+    console.log(newAddress);
+    try {
+      const res = await fetch("/user/change-address", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: newAddress }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        window.location.reload();
+
+      } else {
+        alert(data.message || "Failed to update address");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error updating address");
+    }
+  });
+}
+replaceAdress();
