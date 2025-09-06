@@ -12,11 +12,17 @@ const getUserById = async (id) => {
   return await User.findById(id);
 };
 
+
+const getUserGroups = async (id) => {
+  return await User.findById(id, {groups: 1});
+}
+
 const getIdByUsername = async (username) => {
   const doc = await User.findOne({ username }, "_id").lean();
   console.log(doc._id);
   return doc?._id ?? null;
 };
+
 
 //helper functions to get user properties by id
 const getEmail = async (id) => {
@@ -379,6 +385,7 @@ module.exports = {
   findMissingUsernames,
   getFriends,
   getAvatarUrl,
+  getUserGroups
   areFriends,
   addFriend,
   removeFriend,

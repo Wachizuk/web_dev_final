@@ -11,6 +11,18 @@ const descriptionInput = document.getElementById("description");
 const adminsInput = document.getElementById("admins");
 const managersInput = document.getElementById("managers");
 
+// cover image upload handling
+const coverPickBtn   = document.getElementById("coverPickBtn");
+const coverInput     = document.getElementById("groupCover");
+const coverImageHint = document.getElementById("coverImageHint");
+
+// hook button to hidden input
+coverPickBtn?.addEventListener("click", () => coverInput?.click());
+coverInput?.addEventListener("change", () => {
+  const f = coverInput.files?.[0];
+  coverImageHint.textContent = f ? f.name : "Prefer to use 3:1 ratio image, if not image will be cropped!";
+});
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -46,6 +58,21 @@ form.addEventListener("submit", async (e) => {
       }
       alert(parts.join("\n") || "Could not create group");
       return;
+    }
+
+    // if we have a cover image, upload it
+    const file = coverInput?.files?.[0];
+    if (file) {
+      try {
+        await fetch(`/uploads/groups/${data.groupName}/cover`, {
+          method: "POST",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+      } catch (e) {
+        console.error("Cover upload failed:", e);
+        alert("Cover upload failed");
+      }
     }
 
     // render group page after its been created
