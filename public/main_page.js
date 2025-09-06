@@ -61,15 +61,16 @@ createPostBtn.addEventListener('click', async () => {
   await renderContentWindow(routes.posts.create);
 })
 
+const homeBtn = document.getElementById("home-btn");
+homeBtn.addEventListener('click', async () => {
+  await renderContentWindow(routes.mainFeed);
+})
+
 window.addEventListener('DOMContentLoaded', async () => {
   await renderContentWindow(window.location.hash.substring(1))
 })
 
-
-
-
 ///////////////SEARCH BAR////////////////////////
-
 // DOM refs
 const form  = document.getElementById("top-nav-search-form");
 const input = document.getElementById("top-nav-search-input");
@@ -183,6 +184,7 @@ function escapeHtml(s = "") {
 }
 
 
+
 // SELECTED PROFILE FUNCTION
 
 document.addEventListener("click", async (e) => {
@@ -242,3 +244,4 @@ document.addEventListener("click", async (e) => {
     // re-enable button and restore text
   }
 });
+

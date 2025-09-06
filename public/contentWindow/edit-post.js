@@ -1,14 +1,17 @@
-import { createPost } from "../posts.js";
+import { deletePost, getPost, updatePost } from "../posts.js";
+import { renderContentWindow } from "../utils/renderer.js";
+import { routes } from "../utils/routes.js";
 
 const contentList = document.getElementById("content-input-list");
-
+const postForm = document.getElementById("edit-post-form");
+const postId = postForm.dataset.postId;
 let numOfBlocks = 0;
 
 //creates a post block with default selection, DOES NOT ADD IT TO THE PAGE
 function createContentBlock() {
   const contentBlock = document.createElement("div");
-  contentBlock.classList.add("create-post-content-block");
-  contentBlock.id = `create-post-content-block-${numOfBlocks}`;
+  contentBlock.classList.add("edit-post-content-block");
+  contentBlock.id = `edit-post-content-block-${numOfBlocks}`;
 
   const label = document.createElement("label");
   label.textContent = "Content Type";
@@ -33,7 +36,7 @@ function createContentBlock() {
   //on change of select value change input type
   select.addEventListener("change", (e) => {
     const selectElem = e.target.closest("select");
-    const contentBlock = selectElem.closest(".create-post-content-block");
+    const contentBlock = selectElem.closest(".edit-post-content-block");
     changeContentInputType(contentBlock, selectElem.value);
   });
 
@@ -105,8 +108,8 @@ function createVideoContentInput() {
   const input = document.createElement("input");
   input.type = "file";
   //restrict to videos
-  input.accept = "video/*";
-  input.classList.add("form-control", "content-input", "video-input");
+  (input.accept = "video/*"),
+    input.classList.add("form-control", "content-input", "video-input");
 
   const preview = document.createElement("video");
   preview.classList.add("mt-2");
@@ -144,21 +147,21 @@ document
     contentList.appendChild(createContentBlock());
   });
 
-contentList.appendChild(createContentBlock());
-
-document
-  .getElementById("create-post-form")
-  .addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const { title, contentBlocks } = extractFormData();
-    createPost(title, contentBlocks);
-  });
+postForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const { title, contentBlocks, group } = extractFormData();
+  console.log(contentBlocks);
+  await updatePost(postId, title, contentBlocks);
+  // await changeGroup(group);
+  renderContentWindow(routes.mainFeed);
+});
 
 function extractFormData() {
   const title = document.getElementById("input-post-title").value.trim();
+  const group = document.getElementById("group-select").value;
   const contentBlocks = [];
 
-  document.querySelectorAll(".create-post-content-block").forEach((block) => {
+  document.querySelectorAll(".edit-post-content-block").forEach((block) => {
     const type = block.querySelector(".content-type").value;
     const input = block.querySelector(".content-input");
 
@@ -171,5 +174,55 @@ function extractFormData() {
     }
   });
 
-  return { title, contentBlocks };
+  return { title, group, contentBlocks };
 }
+
+async function loadPostData(postId) {
+  const post = await getPost(postId);
+  document.getElementById("input-post-title").value = post.title;
+
+  post.content.forEach((contentBlock) => {
+    const type = contentBlock.type;
+    const contentBlockInput = createContentBlock();
+    contentBlockInput.querySelector("select").value = type;
+    changeContentInputType(contentBlockInput, type);
+
+    //if its image or video just show what exists already,
+    // if the file was not changed send the existing ones
+    if (type === "text") {
+      contentBlockInput.querySelector(".content-input").value =
+        contentBlock.value;
+    } else if (type === "image") {
+      // show the image
+      const img = contentBlockInput.querySelector("img");
+      img.src = contentBlock.value;
+      contentBlockInput
+        .querySelector(".content-input-wrapper")
+        .appendChild(img);
+    } else if (type === "video") {
+      const video = contentBlockInput.querySelector("video");
+      video.src = contentBlock.value;
+      video.controls = true;
+      contentBlockInput
+        .querySelector(".content-input-wrapper")
+        .appendChild(video);
+    }
+
+    contentList.appendChild(contentBlockInput);
+  });
+}
+
+loadPostData(postId);
+
+const deleteBtn = document.getElementById("delete-post-btn");
+
+deleteBtn.addEventListener("click", async (e) => {
+  e.preventDefault();
+  try {
+    await deletePost(postId);
+    alert("delete success");
+    renderContentWindow(routes.mainFeed);
+  } catch {
+    alert("delete failed");
+  }
+});

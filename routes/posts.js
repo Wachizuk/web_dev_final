@@ -9,11 +9,14 @@ const router = express.Router();
 
 
 router.get('/', userController.isLoggedIn, postController.getAllPosts);
-router.route('/create').get(userController.isLoggedIn, postController.getCreatePostWindow)
+router.route('/create')
+.get(userController.isLoggedIn, postController.getCreatePostWindow)
 .post( userController.isLoggedIn, postController.createPost);
+router.route('/create/:groupName').get(userController.isLoggedIn, postController.getCreatePostWindow);
 router.get('/uploads/:folder/:filename', userController.isLoggedIn, postController.getPostFile);
 router.get('/card/:id', userController.isLoggedIn, postController.getPostCardById);
 router.route('/edit/:id')
+.get(userController.isLoggedIn, postController.getEditPostWindow)
 .patch(userController.isLoggedIn, postController.updatePostContent);
 
 router.route("/:id")
