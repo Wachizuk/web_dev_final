@@ -85,16 +85,10 @@ function buildPath(scope, term) {
   const t = String(term).trim().replace(/^\s*[@#]/, "").replace(/\s+/g, "");
   if (scope === "user")  return `${routes.users.profile}/${encodeURIComponent(t)}`;   // /user/profile/:username
   if (scope === "group") return routes.groups.groupName(encodeURIComponent(t));       // /groups/:groupName
-  if (scope === "post")  return `/posts/${encodeURIComponent(t)}`;                    // adjust if needed
+  if (scope === "post")  return routes.posts.cardById(encodeURIComponent(t));         // /posts/:postId
   return `${routes.users.profile}/${encodeURIComponent(t)}`;
 }
 
-function titleFor(scope, term) {
-  if (scope === "user")  return `Profile: ${term}`;
-  if (scope === "group") return `Group: ${term}`;
-  if (scope === "post")  return `Post: ${term}`;
-  return term;
-}
 
 // submit -> navigate
 form?.addEventListener("submit", async (e) => {
@@ -102,14 +96,10 @@ form?.addEventListener("submit", async (e) => {
   const term = (input?.value || "").trim();
   if (!term) return;
 
-  const scope = getScope();
+  const scope = getScope();  // scope can be "user" , "grop" , "post"
   const path  = buildPath(scope, term);
 
-  await renderContentWindow(path, {
-    showHeader: true,
-    title: titleFor(scope, term)
-  });
-  hideSuggest();
+  await renderContentWindow(path)
 });
 
 // --- Suggest (dropdown) ---
@@ -117,35 +107,22 @@ let options = [], idx = -1;
 
 // input -> fetch suggestions (debounced)
 input?.addEventListener("input", debounce(async () => {
-  const q = (input.value || "").trim();
+  const q = (input.value || "").trim();   
   if (!q) return hideSuggest();
 
   const scope = getScope();
   try {
-    const res = await fetch(`/suggest?scope=${encodeURIComponent(scope)}&q=${encodeURIComponent(q)}&limit=8`, {
-      headers: { Accept: "application/json" }
-    });
+    const res = await 
+    fetch(`/suggest?scope=${encodeURIComponent(scope)}&q=${encodeURIComponent(q)}&limit=8`);   //   /suggest + parameters  limit
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     renderSuggest(data, scope);
-  } catch (err) {
+  } 
+  catch (err) {
     console.error("suggest fetch failed:", err);
     hideSuggest();
   }
 }, 120));
-
-// arrows / enter / escape
-input?.addEventListener("keydown", (e) => {
-  if (!menu || menu.classList.contains("d-none")) return;
-  const max = options.length - 1;
-  if (e.key === "ArrowDown") { e.preventDefault(); setIdx(Math.min(idx + 1, max)); }
-  if (e.key === "ArrowUp")   { e.preventDefault(); setIdx(Math.max(idx - 1, 0)); }
-  if (e.key === "Enter")     {
-    const sel = options[idx];
-    if (sel) { e.preventDefault(); openOption(sel, getScope()); }
-  }
-  if (e.key === "Escape")    hideSuggest();
-});
 
 // click outside closes
 document.addEventListener("click", (e) => {
@@ -157,7 +134,7 @@ function renderSuggest(items, scope) {
   if (!menu) return;
   options = items || []; idx = -1;
   if (!options.length) return hideSuggest();
-
+//         o - label / value         i - index
   menu.innerHTML = options.map((o, i) => `
     <div class="item" data-i="${i}">
       ${icon(scope)} <span>${escapeHtml(o.label)}</span>
@@ -176,7 +153,7 @@ function renderSuggest(items, scope) {
 function openOption(opt, scope) {
   hideSuggest();
   const path = opt.path || buildPath(scope, opt.value || opt.label);
-  renderContentWindow(path, { showHeader: true, title: titleFor(scope, opt.label) });
+  renderContentWindow(path);
 }
 
 function setIdx(i) {
@@ -204,3 +181,64 @@ function escapeHtml(s = "") {
   return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;")
     .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
 }
+
+
+// SELECTED PROFILE FUNCTION
+
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest("#btn-add, #btn-remove");
+  // find if clicked element is "Add" or "Remove" button
+  if (!btn) return;
+
+  const root = document.getElementById("selected-profile");
+  // root element of the profile page
+  if (!root) return; 
+
+  e.preventDefault();  
+  // stop default button/link behavior
+
+  const profileId = root.dataset.profileId;
+  // get profile id from data attribute
+  if (!profileId) {
+    console.error("[friends] missing profile id");
+    return;
+  }
+
+  const method = btn.id === "btn-add" ? "POST" : "DELETE";
+  // choose HTTP method: add = POST, remove = DELETE
+
+  const prevText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = method === "POST" ? "Adding..." : "Removing...";
+  // disable button and show loading text
+
+  try {
+    const res = await fetch(`/user/friends/${encodeURIComponent(profileId)}`, {
+      method,
+      credentials: "same-origin",        // send cookies/session
+      headers: { "Accept": "application/json" },
+    });
+
+    const ct = res.headers.get("content-type") || "";
+    const payload = ct.includes("application/json")
+      ? await res.json()
+      : { success: false, message: await res.text() };
+
+
+    if (!res.ok || !payload.success) {
+      throw new Error(payload.message || `Request failed (${res.status})`);
+    }
+    // if request failed, throw error
+
+    location.reload();
+    // on success: reload page to update UI
+
+  } catch (err) {
+    console.error("[friends] error:", err);
+    alert(err.message || "Action failed");
+    // show error message to user
+    btn.disabled = false;
+    btn.textContent = prevText;
+    // re-enable button and restore text
+  }
+});
