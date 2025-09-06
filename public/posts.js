@@ -1,4 +1,40 @@
+import { renderContentWindow } from "./utils/renderer.js";
 import { routes } from "./utils/routes.js";
+
+/**
+ * @typedef {"text" | "image" | "video"} ContentType
+ */
+
+/**
+ * @typedef {Object} ContentBlock
+ * @property {ContentType} type - The type of content
+ * @property {string} value - Text content or file path (for image/video)
+ */
+
+/**
+ * @typedef {Object} Comment
+ * @property {string} user - User ID of commenter
+ * @property {string} content - Comment text
+ * @property {string[]} likes - Array of user IDs who liked the comment
+ * @property {string} createdAt
+ * @property {string} updatedAt
+ */
+
+/**
+ * @typedef {Object} Post
+ * @property {string} _id - Post ID
+ * @property {string} title - Post title
+ * @property {string} author - User ID of the author
+ * @property {string} authorUsername - Author username (denormalized)
+ * @property {string} [group] - Optional group ID
+ * @property {ContentBlock[]} content - Array of content blocks
+ * @property {string[]} likes - Array of user IDs who liked the post
+ * @property {Comment[]} comments - Array of comments
+ * @property {string} createdAt
+ * @property {string} updatedAt
+ */
+
+
 
 async function getAllPosts() {
   try {
@@ -18,6 +54,14 @@ async function getAllPosts() {
   }
 }
 
+
+
+
+/**
+ * gets post data from the server
+ * @param {String} postId - post id
+ * @returns {Promise<Post>} post object with all data
+ */
 async function getPost(postId) {
   try {
     const res = await fetch(`/posts/${postId}`);
@@ -28,11 +72,9 @@ async function getPost(postId) {
 
     return await res.json();
   } catch (err) {
-    console.error(
       console.error(
         `failed getting post card for ${postId}, reason: ${err.message}`
       )
-    );
   }
 }
 
@@ -60,6 +102,10 @@ function addPostCardToList(postCard) {
   liElem.classList.add("post-list-item");
 
   liElem.innerHTML = postCard;
+  // const postEditBtn = liElem.querySelector("post-edit-btn");
+  // postEditBtn?.addEventListener('click', () => {
+  //   renderContentWindow(routes.posts.edit(postEditBtn.dateset.postId))
+  // });
   postList.appendChild(liElem);
 }
 
@@ -135,4 +181,52 @@ async function createPost(title, contentBlocks) {
   return await res.json();
 }
 
-export { getPostCard, getPost, getAllPosts, renderAllPosts, createPost };
+async function changePostGroup(postId, groupId) {
+  const res = await fetch(routes.posts.changeGroup(postId, groupId) , {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ postId, group }),
+  });
+}
+
+
+/**
+ * updates a post on server
+ * @param {String} postId
+ * @param {String} title
+ * @param {ContentBlock[]} content
+ * @param {String} groupId
+ */
+async function updatePost(postId, title, content, groupId) {
+  //done seperatly because group is optional
+  const updatePayload = {_id: postId, title, content};
+  if (groupId) updatePayload.group = groupId;
+
+  const res = await fetch(routes.posts.edit(postId), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updatePayload),
+  });
+
+  if (!res.ok) {
+    const message = await res.json().message
+    console.log(message)
+    throw new Error(message);
+  }
+
+  return await res.json();
+}
+
+async function deletePost(postId) {
+  const res = await fetch(routes.posts.delete(postId), {
+    method: "DELETE"
+  });
+
+  if (!res.ok) {
+    const message = await res.json().message
+    console.log(message)
+    throw new Error(message);
+  }
+}
+
+export { getPostCard, getPost, getAllPosts, renderAllPosts, createPost, updatePost, deletePost };
