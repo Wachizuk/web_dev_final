@@ -31,7 +31,7 @@ async function createGroup(req, res) {
     }
 
     // make sure admins and managers are valid arrays
-    const adminUsernames   = toUsernameArray(req.body.admins);
+    const adminUsernames = toUsernameArray(req.body.admins);
     const managerUsernames = toUsernameArray(req.body.managers);
 
     // validate all usernames exist, if not alert which ones
@@ -77,12 +77,70 @@ async function createGroup(req, res) {
 }
 
 async function groupPage(req, res) {
-  const groupName = req.params.groupName;
-  //const group = await groupService.getGroupByName(groupName);
+  try {
+    const groupName = req.params.groupName;
+    const group = await groupService.getGroupByName(groupName);
+    const userId = req.session._id;
 
-  res.render(groupFeedRoute, {groupName});
+    const isAdmin = Array.isArray(group.members.admins) && group.members.admins.some(a => String(a) === String(userId));
+
+    res.render('main/partials/group-feed', {
+      group,
+      coverUrl: group.coverFile ? `/uploads/groups/${group.coverFile}` : null,
+      isAdmin,
+      user: { _id: userId },
+    });
+  } catch (err) {
+    console.error('groupPage error:', err.message);
+    res.status(404).send('Group not found');
+  }
 }
 
 
+// --------------------------------------- Follow related function ---------------------------------
 
-module.exports = { groupPage, createGroupPage, createGroup };
+// GET membership info for the logged-in user
+async function getMembership(req, res) {
+  try {
+    const { groupName } = req.params;
+    const userId = req.session._id;
+
+    const { followed, role, membersCount } = await groupService.getMembership(groupName, userId);
+    return res.status(200).json({ ok: true, followed, role, membersCount });
+  } catch (err) {
+    console.error('getMembership error:', err.message);
+    return res.status(err.status || 500).json({ ok: false, message: err.message });
+  }
+}
+
+// POST toggle follow/unfollow for the logged-in user
+async function toggleFollow(req, res) {
+  try {
+    const { groupName } = req.params;
+    const userId = req.session._id;
+    const { followed, membersCount } = await groupService.toggleFollow(groupName, userId);
+    return res.status(200).json({ ok: true, followed, membersCount });
+  } catch (err) {
+    return res.status(err.status || 500).json({ ok: false, message: err.message });
+  }
+}
+
+// -------------------------------------------------------------------------------------------------------
+
+
+// --------------------------------------- Group Members related function ---------------------------------
+
+async function getMembers(req, res) {
+  try {
+    const { groupName } = req.params;
+    const data = await groupService.getMembers(groupName);
+    return res.status(200).json({ ok: true, ...data });
+  } catch (err) {
+    console.error('getMembers error:', err.message);
+    return res.status(err.status || 500).json({ ok: false, message: err.message });
+  }
+}
+
+// --------------------------------------------------------------------------------------------------------
+
+module.exports = { groupPage, createGroupPage, createGroup, getMembership, toggleFollow, getMembers };

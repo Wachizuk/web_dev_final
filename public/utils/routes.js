@@ -12,7 +12,8 @@ const groups = {
 
 const posts = {
         cardById: (id) => `${base.posts}/${id}`,
-        create: `${base.posts}/create`,
+
+        create: `${base.posts}/create`, 
         edit: (postId) => `${base.posts}/edit/${postId}`,
         delete: (postId) => `${base.posts}/${postId}`,
         changeGroup: (postId) => `${base.posts}/changeGroup/${postId}`,

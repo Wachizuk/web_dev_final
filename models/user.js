@@ -12,8 +12,11 @@ const userSchema = new Schema({
   avatarUrl:     { type: String, default: '' },   // Example: https://res.cloudinary.com/.../avatar.jpg
 
   // Friends: store references to other users
-  friends: [{ type: Types.ObjectId, ref: 'User' }],
+
+  friends: [{ type: Types.ObjectId, ref: 'User', default: [] }],
+  groups: [{ type: Types.ObjectId, ref: 'Group', default: [] }], // groups the user is a member of
   address: { type: String, trim: true, default: "" },
+
 }, { timestamps: true });
 
 

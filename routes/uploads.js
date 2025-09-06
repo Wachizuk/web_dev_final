@@ -13,6 +13,8 @@ const rawImage = express.raw({
 // POST: upload a new avatar for a user (e.g. /uploads/avatar/alice)
 router.route("/avatar/:filename",).get( userController.isLoggedIn ,uploadsController.getAvatar);
 router.route("/avatar/new").post( userController.isLoggedIn, rawImage , uploadsController.uploadAvatar);
+router.route("/groups/:groupName/cover").post(userController.isLoggedIn, rawImage, uploadsController.saveGroupCover);
+
 
 
 

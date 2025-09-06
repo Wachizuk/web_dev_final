@@ -6,9 +6,16 @@ const User = require("../models/user"); // make sure this path is correct
 const AVATARS_DIR = path.join(__dirname, "..", "uploads", "avatars");
 const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
 
+// Directory where group covers will be stored (under /uploads/groups)
+const GROUPS_DIR = path.join(__dirname, "..", "uploads", "groups");
+
 // Make sure the directory exists
 if (!fs.existsSync(AVATARS_DIR)) {
   fs.mkdirSync(AVATARS_DIR, { recursive: true });
+}
+
+if (!fs.existsSync(GROUPS_DIR)) {
+  fs.mkdirSync(GROUPS_DIR, { recursive: true });
 }
 
 /**
@@ -21,6 +28,17 @@ const saveAvatarImage = async (userId, buffer, contentType) => {
   const url = await saveImage(buffer , contentType , userId , AVATARS_DIR );
   await User.updateOne({ _id: userId }, { $set: { avatarUrl: url } });
   return url;
+};
+
+/**
+ * Save a cover image for a given group.
+ * File will be saved as: groupName.extension
+ * Returns { filename, url } where url is a public path like /uploads/groups/mygroup.jpg
+ */
+const saveGroupCoverImage = async (groupName, buffer, contentType) => {
+  const url = await saveImage(buffer, contentType, groupName, GROUPS_DIR);
+  const filename = path.basename(url);
+  return { filename, url };
 };
 
 // Generic image save function 
@@ -61,4 +79,4 @@ const getAvatarPathByFilename = async (filename) => {
   }
 };
 
-module.exports = { saveAvatarImage, saveImage, getAvatarPathByFilename };
+module.exports = { saveAvatarImage, saveImage, getAvatarPathByFilename, saveGroupCoverImage };
