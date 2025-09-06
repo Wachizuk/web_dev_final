@@ -13,6 +13,7 @@ const userSchema = new Schema({
 
   // Friends: store references to other users
   friends: [{ type: Types.ObjectId, ref: 'User' }],
+  address: { type: String, trim: true, default: "" },
 }, { timestamps: true });
 
 

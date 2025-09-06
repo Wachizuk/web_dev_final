@@ -58,7 +58,7 @@ async function getPublicProfileByUsername(username) {
   return User.findOne(
     { username: String(username).trim() },
     //  include only these fields in the result (hide others like password)
-    { username: 1, email: 1, avatarUrl: 1, friends: 1 }
+    { username: 1, email: 1, avatarUrl: 1, friends: 1 , address: 1 }
     // replace ObjectIds in 'friends' with the actual friend docs,
     // but only keep their username and avatarUrl
   ).populate({ path: "friends", select: "username avatarUrl" });
@@ -276,6 +276,19 @@ const deleteAccount = async (userId, password) => {
   }
 };
 
+
+// function to update Address
+async function changeAddress(userId, address) {
+  return User.updateOne({ _id: userId }, { $set: { address } });
+}
+
+// function to get Address
+async function getAddress(userId) {
+  const doc = await User.findById(userId).select("address");
+  return doc?.address || null;
+}
+
+
 // ----------------helper functions to get user ids by usernames (used for groups)----------------
 
 // cleans input and makes sure is a valid array
@@ -374,6 +387,8 @@ module.exports = {
   changeEmail,
   changePassword,
   deleteAccount,
+  changeAddress,
+  getAddress,
   toUsernameArray,
   findUserIdsByUsernames,
   findMissingUsernames,

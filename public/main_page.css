@@ -123,7 +123,7 @@ main {
     #side-nav {
         display: none;
     }
-
+  }
 .side-nav-list { list-style: none; padding: 0; }
 .side-nav-list-item { margin-bottom: .6em; }
 .side-list-title { text-align: center; margin-bottom: 1em; }

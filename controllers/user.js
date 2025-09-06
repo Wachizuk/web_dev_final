@@ -59,16 +59,25 @@ async function registerPage(req, res) {
 }
 
 //Render profile page 
-async function profilePage(req, res ) {
-  const userId = req.session._id;
-  const email = await userService.getEmail(userId);
-  const username = await userService.getUsername(userId);
-  const friends = await userService.getFriends(userId);
+async function profilePage(req, res) {
+  try {
+    const userId = req.session?._id;
+    if (!userId) return res.status(401).render("errors/401");
 
-  // Fetch avatarUrl as well
-  const avatarUrl = await userService.getAvatarUrl(userId);
+    const userIdStr = String(userId);
+    const [email, username, friends, avatarUrl, address] = await Promise.all([
+      userService.getEmail(userIdStr),
+      userService.getUsername(userIdStr),
+      userService.getFriends(userIdStr),
+      userService.getAvatarUrl(userIdStr),
+      userService.getAddress(userIdStr),
+    ]);
 
-  res.render(viewProfile , {userId , email , username , friends ,avatarUrl});
+    return res.render(viewProfile, { userId: userIdStr, email, username, friends, avatarUrl, address });
+  } catch (err) {
+    console.error("profilePage error:", err);
+    return res.status(500).render("errors/500", { message: "Server error" });
+  }
 }
 
 //Render other page 
@@ -84,13 +93,14 @@ async function selectedProfilePage(req, res) {
       ? await userService.areFriends(viewerId, profileUser._id)
       : false;
 
-    return res.render("main/partials/selected-profile", {
+    return res.render(viewSelectedProfile, {
       profile: {
         _id: profileUser._id,
         username: profileUser.username,
         email: profileUser.email,
         avatarUrl: profileUser.avatarUrl,
         friends: profileUser.friends || [],
+        address: profileUser.address || "",
       },
       viewer: { _id: viewerId || null },
       isSelf,
@@ -266,6 +276,31 @@ async function removeAccount(req, res) {
   }
 }
 
+// function to update Address
+async function updateAddress(req, res) {
+  try {
+    const userId = req.session?._id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Login required" });
+    }
+
+    const { address } = req.body;
+    console.log(address);
+    if (typeof address !== "string" || !address.trim()) {
+      return res.status(400).json({ success: false, message: "address is required" });
+    }
+
+    const normalized = address.trim();
+    await userService.changeAddress(userId, normalized);
+
+    return res.json({ success: true, message: "Address updated", address: normalized });
+  } catch (err) {
+    console.error("updateAddress error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+}
+
+
 
 // Register function: creates a new account
 // If successful, returns JSON with success:true
@@ -347,6 +382,7 @@ module.exports = {
   updateUsername,
   updateEmail,
   updatePassword,
+  updateAddress,
   removeAccount , 
   profilePage,
   selectedProfilePage,

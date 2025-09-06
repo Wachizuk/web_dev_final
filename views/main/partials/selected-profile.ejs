@@ -48,6 +48,34 @@
       <% } %>
     </ul>
   </div>
+
+  <% if (profile.address) { %>
+  <div class="card mt-3">
+    <div class="card-header d-flex align-items-center gap-2">
+      <i class="bi bi-geo-alt-fill"></i>
+      <span>Location</span>
+      <small class="text-muted ms-auto"><%= profile.address %></small>
+    </div>
+    <div class="card-body">
+      <div class="ratio ratio-16x9">
+        <iframe
+          src="https://www.google.com/maps?q=<%= encodeURIComponent(profile.address) %>&output=embed"
+          loading="lazy"
+          style="border:0;"
+          allowfullscreen
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+    </div>
+  </div>
+<% } else { %>
+  <p class="text-muted mt-3">No address set for this profile.</p>
+<% } %>
+
+
+
+
+
 </div>
 
 
