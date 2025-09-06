@@ -17,9 +17,19 @@ router.route("/register")
 .post(userController.register)
 .get(userController.registerPage);
 
+// ---------------- SEARCH BAR ROUTE ----------------
+router.route("/friends/:userId")
+.post( userController.isLoggedIn, userController.addFriend);
+
+router.route("/friends/:userId")
+.delete(userController.isLoggedIn, userController.removeFriend);
+
 // ---------------- PROFILE ROUTE ----------------
 router.route("/profile")
 .get(userController.isLoggedIn , userController.profilePage)
+
+router.route("/profile/:username")
+.get(userController.isLoggedIn , userController.selectedProfilePage)
 
 router.route("/settings")
 .get(userController.isLoggedIn, userController.settingsPage)

@@ -39,6 +39,7 @@ const getPostCardById = async (req, res) => {
     post.likedByUser = post.likes.includes(req.session._id);
     post.numOfLikes = post.likes.length;
     post.createdAtFormatted = postService.formatPostDate(post.createdAt);
+    post.canEdit = req.session._id == post.author;
     res.render("../views/main/partials/post", { post });
   } else {
     res.status(404).json({ error: "Post not found" });
@@ -68,7 +69,7 @@ const getPostFile = async (req, res) => {
   });
 };
 
-// renders the main feed page this way views/main/base knows when to use main-feed 
+// renders the main feed page this way views/main/base knows when to use main-feed
 const renderMainFeed = async (req, res) => {
   res.render("main/partials/main-feed", {});
 };
@@ -81,69 +82,105 @@ const createPost = async (req, res) => {
   const group = req.session.group;
 
   try {
-    const post = await postService.createPost(author, title, contentBlocks, group);
+    const post = await postService.createPost(
+      author,
+      title,
+      contentBlocks,
+      group
+    );
     res.status(200).json(post);
   } catch (err) {
-    switch(err.code) {
-        case "INVALID_PARAM":
-          console.log(err.message);
-          return res.status(403).json({message: err.message});
-        default:
-          console.error(err.message);
-          return res.status(500).json({message: "internal server error"})
-      }
+    switch (err.code) {
+      case "INVALID_PARAM":
+        console.log(err.message);
+        return res.status(403).json({ message: err.message });
+      default:
+        console.error(err.message);
+        return res.status(500).json({ message: "internal server error" });
+    }
   }
-}
+};
 
 const updatePostContent = async (req, res) => {
-  const userId = req.session._id;
-  const post = req.body.post;
-
   try {
-  const updatedPost = await postService.updatePost(post, userId);
-  res.json(updatedPost);
-  } catch (err) {
-    
-      switch (err.code) {
-        case "NOT_FOUND":
-          console.log(err.message)
-          return res.status(404).json({message: "post not found"})
-        case "NOT_ALLOWED":
-          console.log(err.message)
-          return res.status(403);
-        default:
-          console.error(err.message)
-          res.status(500).json({message: "internal server error"})
-          break;
-      }
+      console.log("here " + req.session._id);
+  } catch (error) {
+    console.error(error.message);
   }
 
-}
+  const userId = req.session._id;
+  const post = {};
+  post.title = req.body.title;
+  post.content = req.body.content
+  post._id = req.params.id;
+
+  try {
+    const updatedPost = await postService.updatePost(post, userId);
+    res.json(updatedPost);
+  } catch (err) {
+    switch (err.code) {
+      case "NOT_FOUND":
+        console.log(`error code ${err.code}, error messge ${err.message}`);
+        return res.status(404).json({ message: "post not found" });
+      case "NOT_ALLOWED":
+        console.log(`error code ${err.code}, error messge ${err.message}`);
+        return res.status(403);
+      default:
+        console.error(err.message);
+        res.status(500).json({ message: "internal server error" });
+        break;
+    }
+  }
+};
 
 const deletePost = async (req, res) => {
-    const userId = req.session._id;
-    const postId = req.params.id;
+  const userId = req.session._id;
+  const postId = req.params.id;
 
-    try {
-      await postService.deletePost(postId, userId);
-      return res.status(200).json({message: "Post deleted successfully"});
-    } catch (err) {
-      switch(err.code) {
-        case "NOT_ALLOWED":
-          console.log(err.message);
-          return res.status(403).json({message: "User is not allowed to delete this post"});
-        case "NOT_FOUND":
-          console.log(err.message)
-          return res.status(404).json({message: "Post not found"});
-        default:
-          console.error(err.message);
-          return res.status(500).json({message: "internal server error"})
-      }
+  try {
+    await postService.deletePost(postId, userId);
+    return res.status(200).json({ message: "Post deleted successfully" });
+  } catch (err) {
+    switch (err.code) {
+      case "NOT_ALLOWED":
+        console.log(err.message);
+        return res
+          .status(403)
+          .json({ message: "User is not allowed to delete this post" });
+      case "NOT_FOUND":
+        console.log(err.message);
+        return res.status(404).json({ message: "Post not found" });
+      default:
+        console.error(err.message);
+        return res.status(500).json({ message: "internal server error" });
     }
-}
+  }
+};
 
 const getCreatePostWindow = async (req, res) => {
-  res.render("main/partials/create-post", {});
-}
+  res.render("main/partials/create-post", { groupName: req.params.groupName });
+};
 
-module.exports = { getPostById, getPostCardById, getAllPosts, getPostFile, renderMainFeed, updatePostContent, deletePost, createPost, getCreatePostWindow };
+const getEditPostWindow = async (req, res) => {
+  const permissions = await postService.getPostPermissions(req.params.id, req.session._id)
+  if(permissions.includes(postService.PERMISSIONS.EDIT)) {
+    const post = await postService.getPostById(req.params.id);
+    await post.populate('group', 'groupName');
+    res.render("main/partials/edit-post", { postId: req.params.id,  groupName: post.group ? post.group.groupName : null});
+  } else {
+    res.status(403).json("user is not allowed to edit this post")
+  }
+};
+
+module.exports = {
+  getPostById,
+  getPostCardById,
+  getAllPosts,
+  getPostFile,
+  renderMainFeed,
+  updatePostContent,
+  deletePost,
+  createPost,
+  getCreatePostWindow,
+  getEditPostWindow,
+};

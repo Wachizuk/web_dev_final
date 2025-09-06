@@ -5,7 +5,10 @@ const routeDefenitions = [
   "/groups/:groupName",
   "/user/settings",
   "/posts/create",
-  "/user/profile"
+  "/posts/create/:groupName",
+  "/user/profile",
+  "/posts/edit/:postId",
+  "/user/profile/:username" 
 ];
 
 /**
@@ -89,8 +92,8 @@ async function renderContentWindow(path) {
   } // main-feed
 
   const contentWindow = document.getElementById("content-window");
-
-  contentWindow.innerHTML = await getHtmlFromPath(path);
+  const result = await getHtmlFromPath(path);
+  contentWindow.innerHTML = result ? result : "Could not retrive the page from the server"
 
   window.location.hash = path;
 

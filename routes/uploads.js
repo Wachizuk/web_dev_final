@@ -16,4 +16,6 @@ router.route("/avatar/new").post( userController.isLoggedIn, rawImage , uploadsC
 router.route("/groups/:groupName/cover").post(userController.isLoggedIn, rawImage, uploadsController.saveGroupCover);
 
 
+
+
 module.exports = router;

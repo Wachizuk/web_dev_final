@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const Validator = require("./validator");
+const mongoose = require("mongoose");
 
 const getUserByEmail = async (email) => {
   return await User.findOne({ email: email.toLowerCase() });
@@ -11,9 +12,17 @@ const getUserById = async (id) => {
   return await User.findById(id);
 };
 
+
 const getUserGroups = async (id) => {
   return await User.findById(id, {groups: 1});
 }
+
+const getIdByUsername = async (username) => {
+  const doc = await User.findOne({ username }, "_id").lean();
+  console.log(doc._id);
+  return doc?._id ?? null;
+};
+
 
 //helper functions to get user properties by id
 const getEmail = async (id) => {
@@ -43,6 +52,92 @@ const getFriends = async (id) => {
     throw error;
   }
 };
+
+/////////////////////////
+
+//  Helper: safely convert a value to a MongoDB ObjectId.
+function oid(x) {
+  return mongoose.Types.ObjectId.isValid(x) ? new mongoose.Types.ObjectId(x) : null;
+}
+
+async function getPublicProfileByUsername(username) {
+  return User.findOne(
+    { username: String(username).trim() },
+    //  include only these fields in the result (hide others like password)
+    { username: 1, email: 1, avatarUrl: 1, friends: 1 }
+    // replace ObjectIds in 'friends' with the actual friend docs,
+    // but only keep their username and avatarUrl
+  ).populate({ path: "friends", select: "username avatarUrl" });
+}
+
+async function areFriends(userId, targetId) {
+  // convert userId and targetId to ObjectId 
+  const u = oid(userId), t = oid(targetId);
+  if (!u || !t) return false;
+  // takes only the id
+  const doc = await User.findOne({ _id: u, friends: t }, { _id: 1 }).lean();
+  // convert doc to boolean: true if found, false if null
+  return !!doc;
+}
+
+async function addFriend(userId, targetId) {
+  // convert userId and targetId to ObjectId 
+  const u = oid(userId), t = oid(targetId);
+  if (!u || !t) {
+    const e = new Error("bad_id");
+    e.code = 400;
+    throw e;
+  }
+
+  if (String(u) === String(t)) {
+    const e = new Error("cannot_add_self");
+    e.code = 400;
+    throw e;
+  }
+
+  // Run both updates 
+  const [rViewer, rTarget] = await Promise.all([
+    User.updateOne({ _id: u }, { $addToSet: { friends: t } }),
+    User.updateOne({ _id: t }, { $addToSet: { friends: u } }),
+  ]);
+
+  return {
+    // matchedCount && modifiedCount comes from mongoDB (.updateOne)
+    matchedViewer:  rViewer.matchedCount  > 0,
+    modifiedViewer: rViewer.modifiedCount || 0,
+    matchedTarget:  rTarget.matchedCount  > 0,
+    modifiedTarget: rTarget.modifiedCount || 0,
+  };
+}
+
+async function removeFriend(userId, targetId) {
+   // convert userId and targetId to ObjectId
+  const u = oid(userId), t = oid(targetId);
+  if (!u || !t) 
+    return { matchedViewer:false, modifiedViewer:0, matchedTarget:false, modifiedTarget:0 };
+  if (String(u) === String(t)) 
+    return { matchedViewer:true, modifiedViewer:0, matchedTarget:true, modifiedTarget:0 }; 
+   // run both updates
+  const [rViewer, rTarget] = await Promise.all([
+    User.updateOne({ _id: u }, { $pull: { friends: t } }),
+    User.updateOne({ _id: t }, { $pull: { friends: u } }),
+  ]);
+
+  return {
+    // matchedCount && modifiedCount comes from mongoDB (.updateOne)
+    matchedViewer:  rViewer.matchedCount  > 0,
+    modifiedViewer: rViewer.modifiedCount || 0,
+    matchedTarget:  rTarget.matchedCount  > 0,
+    modifiedTarget: rTarget.modifiedCount || 0,
+  };
+}
+
+
+
+//////////////////////////////////
+
+
+
 
 // Change username service
 const changeUsername = async (userId, newUsername) => {
@@ -276,6 +371,7 @@ module.exports = {
   getUserByEmail,
   getUserByUsername,
   getUserById,
+  getIdByUsername,
   getEmail,
   getUsername,
   login,
@@ -290,4 +386,8 @@ module.exports = {
   getFriends,
   getAvatarUrl,
   getUserGroups
+  areFriends,
+  addFriend,
+  removeFriend,
+  getPublicProfileByUsername,
 };

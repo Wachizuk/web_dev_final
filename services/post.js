@@ -64,7 +64,7 @@ function formatPostDate(postDate) {
   // for some reason months start from 0 unlike all the day...
   let month = (postDate.getMonth() + 1).toString().padStart(2, "0");
   let year = postDate.getFullYear();
-  return `${day}/${month}/${year} ${minutes}:${hours}`;
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
 }
 
 const PERMISSIONS = {
@@ -101,14 +101,14 @@ const ROLES = {
  * @param {String} userId
  * @returns
  */
-function getPostPermissions(postId, userId) {
+async function getPostPermissions(postId, userId) {
   try {
-    const post = getPostById(postId);
+    const post = await getPostById(postId);
     if (!post) {
       const err = new Error("post not found");
       err.code = "NOT_FOUND";
       throw err;
-    };
+    }
 
     if (post.author == userId) return ROLES.AUTHOR;
     // TODO: GET GROUP ROLE OF USER AND RETURN PERMISSION ACCORDINGLY
@@ -130,13 +130,14 @@ function getPostPermissions(postId, userId) {
  * @param {String} post._id - id of post to update
  * @param {String} userId - id of user that requests the update
  * @param {String} post.title - post title
+ * @param {String} post.group - group id
  * @param {*} post.contentBlocks - array of content blocks according to model schema
  */
 async function updatePost(post, userId) {
-  const oldPost = null;
+  let oldPost = null;
 
   try {
-    oldPost = getPostById(post._id);
+    oldPost = await getPostById(post._id);
     if (!oldPost) {
       throw new Error(`post with id '${post._id}' does not exist`);
     }
@@ -145,10 +146,10 @@ async function updatePost(post, userId) {
     throw err;
   }
 
-  const permissions = getPostPermissions(Post._id, userId);
+  const permissions = await getPostPermissions(oldPost._id, userId);
   if (!permissions) {
     const err = new Error(
-      `user '${userId}' is blocked from post '${Post._id}'`
+      `user '${userId}' is blocked from post '${oldPost._id}'`
     );
     err.code = "NOT_ALLOWED";
     throw err;
@@ -156,9 +157,23 @@ async function updatePost(post, userId) {
 
   if (permissions.includes(PERMISSIONS.EDIT)) {
     oldPost.title = post.title ? post.title : oldPost.title;
-    oldPost.contentBlocks = post.contentBlocks
-      ? post.contentBlocks
-      : oldPost.contentBlocks;
+    oldPost.content = post.content ? post.content : oldPost.content;
+  } else if (!post.title || !post.content) {
+    const err = new Error(
+      `user '${userId}' is blocked from  updating content of post '${oldPost._id}'`
+    );
+    err.code = "NOT_ALLOWED";
+    throw err;
+  }
+
+  if (permissions.includes(PERMISSIONS.GROUP)) {
+    oldPost.group = post.group ? post.group : oldPost.group;
+  } else if(!post.group) {
+    const err = new Error(
+      `user '${userId}' is blocked updating/changin group assosiation of post '${oldPost._id}'`
+    );
+    err.code = "NOT_ALLOWED";
+    throw err;
   }
 
   return await oldPost.save();
@@ -170,7 +185,7 @@ async function updatePost(post, userId) {
  * @param {String} userId user id
  */
 async function deletePost(postId, userId) {
-  const permissions = getPostPermissions(postId, userId);
+  const permissions = await getPostPermissions(postId, userId);
   if (!permissions.includes(PERMISSIONS.DELETE)) {
     const err = new Error(
       `user '${userId} does not have permission to delete post ${postId}`
@@ -193,4 +208,6 @@ module.exports = {
   formatPostDate,
   updatePost,
   deletePost,
+  getPostPermissions,
+  PERMISSIONS,
 };
