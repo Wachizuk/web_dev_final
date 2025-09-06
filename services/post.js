@@ -1,6 +1,9 @@
 const Post = require("../models/post"); // Import the User model from Mongoose
 const userService = require("./user");
 const Validator = require("./validator");
+const path = require("path");
+
+const PLACEHOLDER_LOCATION = path.join("uploads", "posts", "missing", "placeHolder.png");
 
 const getAllPostIds = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) return null;
@@ -22,6 +25,39 @@ const getPostsByAuthorUsername = async (authorUsername) =>
 const getPostsByText = async (text) =>
   await Post.find({ $text: { $search: text } });
 
+//not very efficient but does the job - .save updates the whole post each time
+//to improve will need to use findByIdAndUpdate but its a weird query, not very readable and its harder to check errors
+/**
+ *
+ * @param {String} postId - post id
+ * @param {String} contentBlockIndex - index of content block
+ * @param {String} path - path to make queries for getting the desired file
+ * @returns
+ */
+const updateContentBlockPath = async (postId, contentBlockIndex, path) => {
+  const post = await getPostById(postId);
+
+  if (!post) {
+    const err = new Error("post not found");
+    err.code = "NOT_FOUND";
+    throw err;
+  }
+
+  if (!["video", "image"].includes(post.content[contentBlockIndex].type)) {
+    const err = new Error("content block is not a path type");
+    err.code = "INVALID_PARAM";
+    throw err;
+  }
+
+  const originalPath = post.content[contentBlockIndex].value;
+
+  post.content[contentBlockIndex].value = path;
+
+  await post.save();
+
+  return originalPath;
+};
+
 /**
  * creates new post, throws error on failure
  * @param {*} author - author id
@@ -39,7 +75,13 @@ async function createPost(author, title, contentBlocks, group) {
     title: title,
     author: author,
     authorUsername: user.username,
-    content: contentBlocks,
+    // for blocks the path is decided after the user uploads a file and it gets saved in the server
+    // this is done after create
+    content: contentBlocks.map((block) => {
+      if (["image", "video"].includes(block.type))
+        block.value = PLACEHOLDER_LOCATION
+      return block;
+    }),
     // group: group ? group : null,
     group: null,
     likes: [],
@@ -121,7 +163,26 @@ async function getPostPermissions(postId, userId) {
   }
 }
 
-//TODO: update post (owner only), delete post (owner only), add comment, like post,
+//add comment, like post
+
+/**
+ * toggle user like on post
+ * @param {String} postId
+ * @param {String} userId
+ * @returns new num of likes
+ */
+const toggleLike = async (postId, userId) => {
+  const post = await Post.findById(postId, "likes");
+
+  if (post.likes.includes(userId)) {
+    await Post.findByIdAndUpdate(postId, { $pull: { likes: userId } });
+    return post.likes.length - 1;
+  }
+
+  await Post.findByIdAndUpdate(postId, { $addToSet: { likes: userId } });
+  return post.likes.length + 1;
+};
+
 /**
  * update post according to given fields in the object, post Id must be passed
  * will only be updated if user has required permissions (PERMISSIONS.UPDATE)
@@ -157,7 +218,24 @@ async function updatePost(post, userId) {
 
   if (permissions.includes(PERMISSIONS.EDIT)) {
     oldPost.title = post.title ? post.title : oldPost.title;
-    oldPost.content = post.content ? post.content : oldPost.content;
+    if (newPost.content) {
+      const oldContent = oldPost.content;
+      const newContent = newPost.content;
+
+      //keep old content paths if no change in new, otherwise swap to place holder
+      newContent.forEach((block, index) => {
+        if (
+          index >= oldContent.length ||
+          block.value != oldContent[index].value
+        ) {
+          if (["image", "video"].includes(block.type))
+            block.value = PLACEHOLDER_LOCATION;
+        }
+      });
+
+      oldPost.content = newContent;
+    }
+    //attempt to change without permissions
   } else if (!post.title || !post.content) {
     const err = new Error(
       `user '${userId}' is blocked from  updating content of post '${oldPost._id}'`
@@ -168,7 +246,7 @@ async function updatePost(post, userId) {
 
   if (permissions.includes(PERMISSIONS.GROUP)) {
     oldPost.group = post.group ? post.group : oldPost.group;
-  } else if(!post.group) {
+  } else if (!post.group) {
     const err = new Error(
       `user '${userId}' is blocked updating/changin group assosiation of post '${oldPost._id}'`
     );
@@ -210,4 +288,6 @@ module.exports = {
   deletePost,
   getPostPermissions,
   PERMISSIONS,
+  toggleLike,
+  updateContentBlockPath,
 };

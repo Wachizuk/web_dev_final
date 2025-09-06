@@ -141,6 +141,6 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 
-./uploads/*
-/uploads/*
-uploads/*
+# ./uploads/*
+# /uploads/*
+# uploads/*

@@ -1,28 +1,36 @@
-<div class="card post">
-  <div class="card-header post-header">
+<div class="card post" data-post-id="<%= post._id %>">
+  <header class="card-header post-header">
     <div class="container">
       <div class="row">
         <div class="col-6 post-header-left-side">
-          <h4 class="card-title post-title"><%= post.title %></h4>
+          <h4 class="card-title post-title"><%=post.title%></h4>
         </div>
         <div class="col-6 post-header-right-side">
-            <div class="post-created-date"><%= post.createdAtFormatted %></div>
+          <div class="post-created-date"><%=post.createdAtFormatted %></div>
           <a class="post-author" href="#"><%= post.authorUsername %></a>
         </div>
       </div>
     </div>
-  </div>
+  </header>
   <div class="card-body post-body">
     <!-- render all content blocks according to type -->
-    <% post.content.forEach(block => { if (block.type === "text") { %>
-    <p class="post-block card-text post-text"><%= block.value %></p>
-    <% } else if (block.type === "image") { %>
-    <img class="post-block card-img post-img" src="<%=block.value%>" alt="" />
-    <% } else if (block.type === "video") {%>
-    <video class="post-block post-video" src="<%=block.value%>" controls></video>
-    <% } }) %>
+    <% post.content.forEach(block => { %>
+    <section>
+      <% if (block.type === "text") { %>
+      <p class="post-block card-text post-text"><%=block.value%></p>
+      <% } else if (block.type === "image") { %>
+      <img class="post-block card-img post-img" src="<%=block.value%>" alt="" />
+      <% } else if (block.type === "video") {%>
+      <video
+        class="post-block post-video"
+        src="<%=block.value%>"
+        controls
+      ></video>
+      <% } %>
+    </section>
+    <%}) %>
   </div>
-  <div class="card-footer post-footer">
+  <footer class="card-footer post-footer">
     <button
       class="btn post-footer-btn post-like-btn <% if (post.likedByUser) { %>post-liked<% } %>"
     >
@@ -35,15 +43,22 @@
       <i class="bi bi-chat-dots post-chat-icon"></i>
       <span class="post-num-of-comments"><%= post.comments.length %></span>
     </button>
-       <% if (post.canEdit) { %>
-     <button
-      class="btn post-footer-btn post-edit-btn" data-post-id="<%=post._id%>"
+    <% if (post.canEdit) { %>
+    <button
+      class="btn post-footer-btn post-edit-btn"
+      data-post-id="<%=post._id%>"
     >
-      <i
-        class="bi post-like-icon%>"
-      ></i>
-      <span class="post-edit">Edit Post</span>
+      <i class="bi bi-pencil-square post-edit-icon"></i>
+      <span class="post-edit">Edit</span>
+    </button>
+    <% } else if (post.canManageGroup) { %>
+    <button
+      class="btn post-footer-btn post-manage-group-btn"
+      data-post-id="<%=post._id%>"
+    >
+      <i class="bi bi-people post-mangage-group-icon>"></i>
+      <span class="post-edit">Post Group Settings</span>
     </button>
     <% } %>
-  </div>
+  </footer>
 </div>

@@ -3,6 +3,22 @@ const groupService = require("../services/group");
 const fs = require("fs");
 const path = require("path");
 
+const handlePostErrors = async (req, res, err) => {
+    switch (err.code) {
+      // non default errors are console log because they are related to client errors and not server errors
+      case "NOT_FOUND":
+        console.log(`error code: ${err.code}, error messge: ${err.message}`);
+        return res.status(404).json({ message: "post not found" });
+      case "NOT_ALLOWED":
+        console.log(`error code: ${err.code}, error messge: ${err.message}`);
+        return res.status(403);
+      default:
+        console.error(err.message);
+        res.status(500).json({ message: "internal server error" });
+        break;
+    }
+}
+
 const getAllPosts = async (req, res) => {
   let posts = null;
   posts = await postService.getAllPosts();
@@ -15,7 +31,7 @@ const getPostById = async (req, res) => {
   try {
     post = await postService.getPostById(req.params.id);
   } catch (err) {
-    console.error(err.message);
+    await handlePostErrors(req, res, err)
   }
 
   if (post) {
@@ -172,6 +188,18 @@ const getEditPostWindow = async (req, res) => {
   }
 };
 
+const toggleLike = async (req, res) => {
+  const userId = req.session._id;
+  const postId = req.params.id;
+
+  try {
+    const numOfLikes = await postService.toggleLike(postId, userId);
+    res.status(200).json({numOfLikes});
+  } catch (err) {
+    await handlePostErrors(req, res, err);
+  }
+}
+
 module.exports = {
   getPostById,
   getPostCardById,
@@ -183,4 +211,5 @@ module.exports = {
   createPost,
   getCreatePostWindow,
   getEditPostWindow,
+  toggleLike
 };

@@ -1,4 +1,6 @@
-import { createPost } from "../posts.js";
+import { createPost, deletePost, uploadPostFile } from "../posts.js";
+import { renderContentWindow } from "../utils/renderer.js";
+import { routes } from "../utils/routes.js";
 
 const contentList = document.getElementById("content-input-list");
 
@@ -150,26 +152,91 @@ document
   .getElementById("create-post-form")
   .addEventListener("submit", async (e) => {
     e.preventDefault();
-    const { title, contentBlocks } = extractFormData();
-    createPost(title, contentBlocks);
+    const { title, contentBlocks, mediaContentBlocks } = extractFormData();
+
+    if(!title) {
+      alert("title missing");
+      return;
+    }
+
+    let countTextInputs = 0;
+
+    contentBlocks.forEach((block, index) => {
+      if(block.type == "text") countTextInputs++
+      if(block.type == "text" && !(block.value.trim())) {
+        alert(`missing input at entry ${index + 1}`);
+        return;
+      }
+    })
+
+    if(countTextInputs + mediaContentBlocks.length !== contentBlocks.length) {
+      alert(`missing media input`);
+        return;
+    }
+
+    const post = await createPost(title, contentBlocks);
+
+    if (!post) {
+      alert("failed creating post");
+      return;
+    }
+
+    let success = 0;
+
+    for (let index = 0; index < mediaContentBlocks.length; index++) {
+      const block = mediaContentBlocks[index];
+
+      const fileInput = document
+        .querySelector(`#create-post-content-block-${index}`)
+        .querySelector("input");
+
+      const file = fileInput.files[0];
+      if (!file) {
+        console.log("failed file upload for block " + index);
+        return;
+      }
+
+      const result = await uploadPostFile(file, post._id, block.blockIndex);
+      if (result) {
+        success++;
+      }
+    }
+
+    mediaContentBlocks?.forEach(async (block, index) => {});
+
+    if (success < mediaContentBlocks.length) {
+      // await deletePost(post._id);
+      await deletePost(postId);
+      alert("Failed uploading post files :(");
+    } else {
+      alert("Post Created :)")
+      renderContentWindow(routes.mainFeed);
+    }
   });
 
 function extractFormData() {
   const title = document.getElementById("input-post-title").value.trim();
   const contentBlocks = [];
+  const mediaContentBlocks = [];
 
-  document.querySelectorAll(".create-post-content-block").forEach((block) => {
-    const type = block.querySelector(".content-type").value;
-    const input = block.querySelector(".content-input");
+  document
+    .querySelectorAll(".create-post-content-block")
+    .forEach((block, index) => {
+      const type = block.querySelector(".content-type").value;
+      const input = block.querySelector(".content-input");
 
-    if (type === "text") {
-      contentBlocks.push({ type, value: input.value.trim() });
-    } else if (type === "image" || type === "video") {
-      console.log(
-        "skipping post file upload because of missing implementation"
-      );
-    }
-  });
+      if (type === "text") {
+        contentBlocks.push({ type, value: input.value.trim() });
+      } else if (type === "image" || type === "video") {
+        contentBlocks.push({ type, value: "value" });
+        if(!input.files || input.files.length === 0) return;
+        mediaContentBlocks.push({
+          type,
+          blockIndex: index,
+          file: input.files[0],
+        });
+      }
+    });
 
-  return { title, contentBlocks };
+  return { title, contentBlocks, mediaContentBlocks };
 }
