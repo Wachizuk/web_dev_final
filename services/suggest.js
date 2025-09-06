@@ -24,12 +24,12 @@ async function users(rx, limit) {
 
 
 
-// not working for groups
+
 async function groups(rx, limit) {
   const filter = rx ? { $or: [{ groupName: rx }, { displayName: rx }] } : {};
 
   const docs = await Group.find(filter, "groupName displayName -_id")
-    .collation({ locale: "en", strength: 2 }) // case-insensitive
+    .collation({ locale: "en", strength: 2 }) 
     .sort({ groupName: 1 })
     .limit(limit)
     .lean();

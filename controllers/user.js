@@ -15,6 +15,7 @@ const viewLogin = "login-page/base";
 const viewRegister = "login-page/register-page";
 const viewSettings = "main/partials/settings";
 const viewProfile = "main/partials/profile"
+const viewSelectedProfile = "main/partials/selected-profile";
 
 // Middleware to check if a user is logged in based on session._id
 // If logged in → continue, otherwise redirect to login page
@@ -71,22 +72,84 @@ async function profilePage(req, res ) {
 }
 
 //Render other page 
-async function selectedProfilePage(req, res ) {
-  const selectedUsername = req.params.username;
-     if (!selectedUsername) {
-      return res.status(400).render("errors/400", { message: "Missing username param" });
-    }
-  const userId = await userService.getIdByUsername(selectedUsername);
-   if (!userId) {
-      return res.status(404).render("errors/404", { message: "User not found" });
-    }
+async function selectedProfilePage(req, res) {
+  try {
+    const selectedUsername = req.params.username;
+    const profileUser = await userService.getPublicProfileByUsername(selectedUsername);
+    if (!profileUser) return res.status(404).render("errors/404", { message: "User not found" });
 
-  const email = await userService.getEmail(userId);
-  const username = await userService.getUsername(userId);
-  const friends = await userService.getFriends(userId);
-  const avatarUrl = await userService.getAvatarUrl(userId);
+    const viewerId = req.session?._id || null;
+    const isSelf = viewerId && String(viewerId) === String(profileUser._id);
+    const isFriend = viewerId && !isSelf
+      ? await userService.areFriends(viewerId, profileUser._id)
+      : false;
 
-  res.render(viewProfile , {userId , email , username , friends ,avatarUrl});
+    return res.render("main/partials/selected-profile", {
+      profile: {
+        _id: profileUser._id,
+        username: profileUser.username,
+        email: profileUser.email,
+        avatarUrl: profileUser.avatarUrl,
+        friends: profileUser.friends || [],
+      },
+      viewer: { _id: viewerId || null },
+      isSelf,
+      isFriend,
+      message: "",
+    });
+  } catch (err) {
+    console.error("selectedProfilePage error:", err);
+    return res.status(500).render("errors/500", { message: "Server error" });
+  }
+}
+
+
+// Function add friends
+async function addFriend(req, res) {
+  try {
+    const viewerId = req.session?._id;
+    const targetId = req.params.userId;
+    if (!targetId) return res.status(400).json({ success: false, message: "Missing target id" });
+
+    const r = await userService.addFriend(viewerId, targetId);
+    if (!r.matchedViewer || !r.matchedTarget) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    return res.json({
+      success: true,
+      info: {
+        viewer: { matched: r.matchedViewer, modified: r.modifiedViewer },
+        target: { matched: r.matchedTarget, modified: r.modifiedTarget },
+      }
+    });
+  } catch (err) {
+    const msg =
+      err.message === "cannot_add_self" ? "You cannot add yourself" :
+      err.message === "bad_id"           ? "Bad user id" :
+      "Failed to add";
+    return res.status(err.code || 400).json({ success: false, message: msg });
+  }
+}
+
+
+// Function to remove friends
+async function removeFriend(req, res) {
+  try {
+    const viewerId = req.session?._id;
+    const targetId = req.params.userId;
+    if (!targetId) return res.status(400).json({ success:false, message:"Missing target id" });
+    const r = await userService.removeFriend(viewerId, targetId);
+    return res.json({
+      success: true,
+      info: {
+        viewer: { matched: r.matchedViewer, modified: r.modifiedViewer },
+        target: { matched: r.matchedTarget, modified: r.modifiedTarget },
+      }
+    });
+  } catch (err) {
+    console.error("removeFriend error:", err);
+    return res.status(400).json({ success:false, message:"Failed to remove" });
+  }
 }
 
 
@@ -286,5 +349,7 @@ module.exports = {
   updatePassword,
   removeAccount , 
   profilePage,
-  selectedProfilePage
+  selectedProfilePage,
+  addFriend,
+  removeFriend
 };
