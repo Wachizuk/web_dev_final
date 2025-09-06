@@ -385,7 +385,7 @@ module.exports = {
   findMissingUsernames,
   getFriends,
   getAvatarUrl,
-  getUserGroups
+  getUserGroups,
   areFriends,
   addFriend,
   removeFriend,
