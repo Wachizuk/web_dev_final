@@ -11,6 +11,12 @@ const getUserById = async (id) => {
   return await User.findById(id);
 };
 
+const getIdByUsername = async (username) => {
+  const doc = await User.findOne({ username }, "_id").lean();
+  console.log(doc._id);
+  return doc?._id ?? null;
+};
+
 //helper functions to get user properties by id
 const getEmail = async (id) => {
   const user = await getUserById(id);
@@ -272,6 +278,7 @@ module.exports = {
   getUserByEmail,
   getUserByUsername,
   getUserById,
+  getIdByUsername,
   getEmail,
   getUsername,
   login,

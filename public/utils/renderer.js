@@ -8,6 +8,7 @@ const routeDefenitions = [
   "/posts/create/:groupName",
   "/user/profile",
   "/posts/edit/:postId",
+  "/user/profile/:username" 
 ];
 
 /**

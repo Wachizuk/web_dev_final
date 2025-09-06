@@ -58,6 +58,9 @@ app.use('/', baseRoute);
 const groupsRoute = require("./routes/groups");
 app.use("/groups", groupsRoute);
 
+const suggestRoute = require("./routes/suggest")
+app.use("/suggest", suggestRoute);
+
 // your existing router for POST/GET avatar remains fine
 const uploadsRoute = require('./routes/uploads');
 app.use('/uploads', uploadsRoute);

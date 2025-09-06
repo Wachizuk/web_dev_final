@@ -70,6 +70,26 @@ async function profilePage(req, res ) {
   res.render(viewProfile , {userId , email , username , friends ,avatarUrl});
 }
 
+//Render other page 
+async function selectedProfilePage(req, res ) {
+  const selectedUsername = req.params.username;
+     if (!selectedUsername) {
+      return res.status(400).render("errors/400", { message: "Missing username param" });
+    }
+  const userId = await userService.getIdByUsername(selectedUsername);
+   if (!userId) {
+      return res.status(404).render("errors/404", { message: "User not found" });
+    }
+
+  const email = await userService.getEmail(userId);
+  const username = await userService.getUsername(userId);
+  const friends = await userService.getFriends(userId);
+  const avatarUrl = await userService.getAvatarUrl(userId);
+
+  res.render(viewProfile , {userId , email , username , friends ,avatarUrl});
+}
+
+
 //Render settings page
 async function settingsPage(req, res) {
   const userId = req.session._id;
@@ -265,5 +285,6 @@ module.exports = {
   updateEmail,
   updatePassword,
   removeAccount , 
-  profilePage
+  profilePage,
+  selectedProfilePage
 };
