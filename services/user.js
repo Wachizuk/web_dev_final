@@ -11,6 +11,10 @@ const getUserById = async (id) => {
   return await User.findById(id);
 };
 
+const getUserGroups = async (id) => {
+  return await User.findById(id, {groups: 1});
+}
+
 //helper functions to get user properties by id
 const getEmail = async (id) => {
   const user = await getUserById(id);
@@ -285,4 +289,5 @@ module.exports = {
   findMissingUsernames,
   getFriends,
   getAvatarUrl,
+  getUserGroups
 };
