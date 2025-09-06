@@ -1,15 +1,132 @@
-<div class="row g-3">
+<!--group members count calculation-->
+<%
+  const m = group?.members || {};
+  const membersCount =
+    (m?.admins?.length || 0) +
+    (m?.managers?.length || 0) +
+    (m?.plainUsers?.length || 0);
+%>
+
+<%
+  const inAdmins = Array.isArray(m?.admins) && m.admins.some(a => String(a) === String(user._id));
+  const inManagers = Array.isArray(m?.managers) && m.managers.some(x => String(x) === String(user._id));
+  const inPlain = Array.isArray(m?.plainUsers) && m.plainUsers.some(p => String(p) === String(user._id));
+  const isMember = !!(inAdmins || inManagers || inPlain);
+%>
+
+
+
+<!------------------------------ top group area ------------------------------>
+
+<!-- group cover image if exists -->
+<div class="group-header">
+  <% if (coverUrl) { %>
+    <img class="group-cover" src="<%= coverUrl %>" alt="<%= group.displayName %> cover">
+  <% } %>
+</div>
+
+<!-- Group header -->
+<div class="row align-items-center justify-content-between mb-3">
+  <!-- Title -->
+  <div class="col">
+    <h1 class="post-title mb-0" id="group-title">
+      <%= group.displayName %>
+    </h1>
+  </div>
+
+  <!-- Actions -->
+  <div class="col-auto d-flex align-items-center gap-2">
+    <!-- Follow -->
+    <button class="btn <%= isMember ? 'btn-outline-primary' : 'btn-primary' %> btn-sm" id="follow-group-btn"
+      data-group="<%= group.groupName %>" data-followed="<%= isMember ? '1' : '0' %>">
+      <%= isMember ? 'Unfollow' : 'Follow Group' %>
+    </button>
+    
+    <!-- Members -->
+    <button class="btn btn-outline-secondary btn-sm" id="group-members-btn" data-group="<%= group.groupName %>">
+      Members (<%= membersCount %>)
+    </button>
+
+    <!-- Settings (admins only) -->
+    <% if (isAdmin) { %>
+      <button class="btn btn-secondary btn-sm" id="group-settings-btn"
+              data-group="<%= group.groupName %>">
+        Group Settings
+      </button>
+    <% } %>
+  </div>
+</div>
+
+<!------------------------------ END OF top group area ------------------------------>
+
+<!------------------------------ main content area ------------------------------>
+
+ <!-- 2 MAIN CONTENT COLS part -->
+<div id="group-columns"> 
   <!-- LEFT COL: posts using main_page.js -->
-  <div class="col-12 col-lg-8">
+  <div class="left-col">
     <ul id="post-list"
         class="post-list"
-        data-group="<%= groupName %>">
+        data-group="<%= group.groupName %>">
     </ul>
   </div>
 
   <!-- RIGHT COL: group info -->
-  <div class="col-12 col-lg-4">
-    <!-- will be filled soon -->
+  <div class="right-col">
+    <!-- About box that matches a post exactly -->
+    <div id="group-about" class="card post">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h3 class="post-title mb-0">About this Group:</h3>
+        <div class="post-header-right-side"><!-- intentionally empty: no date/user --></div>
+      </div>
+  
+      <div class="card-body post-block">
+        <p class="post-text mb-0">
+          <%= group?.description || 'No description yet.' %>
+        </p>
+      </div>
+    </div>
   </div>
 </div>
 <script type="module" src="/contentWindow/group-feed.js"></script>
+
+<!------------------------------ END OF main content area ------------------------------>
+
+
+<!------------------------------ Members POPUP window ------------------------------>
+
+<!-- Members Modal -->
+<div class="modal fade" id="groupMembersModal" tabindex="-1" aria-labelledby="groupMembersModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="groupMembersModalLabel">Group Members</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <section class="mb-3">
+          <h6 class="mb-2">Admins</h6>
+          <ul class="list-group" id="members-admins"></ul>
+        </section>
+
+        <section class="mb-3">
+          <h6 class="mb-2">Managers</h6>
+          <ul class="list-group" id="members-managers"></ul>
+        </section>
+
+        <section>
+          <h6 class="mb-2">Members</h6>
+          <ul class="list-group" id="members-plain"></ul>
+        </section>
+      </div>
+
+      <div class="modal-footer">
+        <span class="text-muted small" id="members-total"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!------------------------------ END OF Members POPUP window ------------------------------>

@@ -1,3 +1,4 @@
+
 <div class="container my-5">
   <!-- Profile Header -->
   <div class="card mb-4">
@@ -42,6 +43,37 @@
       <% } %>
     </ul>
   </div>
+
+<!-- Address Card -->
+<div class="card mt-3">
+  <div class="card-header d-flex align-items-center gap-2">
+    <i class="bi bi-geo-alt-fill"></i>
+    <span>Address</span>
+    <% if (address) { %>
+      <small id="address-current" class="text-muted ms-auto"><%= address %></small>
+    <% } %>
+  </div>
+
+  <div class="card-body">
+    <% if (address) { %>
+      <div class="ratio ratio-16x9 mb-3">
+        <iframe id="address-map"
+          src="https://www.google.com/maps?q=<%= encodeURIComponent(address) %>&output=embed"
+          loading="lazy" allowfullscreen style="border:0;"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+    <% } else { %>
+      <p class="text-muted mb-3">No address set</p>
+    <% } %>
+
+    <!-- Change address form -->
+    <form id="address-form" class="d-flex gap-2">
+      <input type="text" name="address" class="form-control" placeholder="Enter new address" value="<%= address || '' %>">
+      <button type="submit" class="btn btn-sm btn-primary">Save</button>
+    </form>
+  </div>
+</div>
 </div>
 
 <script type="module" src="/contentWindow/profile.js"></script>

@@ -1,0 +1,81 @@
+<div id="selected-profile" class="container my-5" data-profile-id="<%= String(profile._id) %>">
+  <!-- Profile Header -->
+  <div class="card mb-4">
+    <div class="card-body d-flex align-items-center gap-3">
+      <img
+        src="<%= profile.avatarUrl || '/uploads/avatars/placeholder.png' %>"
+        alt="<%= profile.username %>"
+        class="rounded-circle"
+        width="80" height="80">
+
+      <div>
+        <h4 class="mb-0"><%= profile.username %></h4>
+        <p class="text-muted mb-0"><%= profile.email %></p>
+
+        <% if (!isSelf && viewer._id) { %>
+          <% if (isFriend) { %>
+            <button id="btn-remove" class="btn btn-sm btn-outline-danger mt-2">Remove Friend</button>
+          <% } else { %>
+            <button id="btn-add" class="btn btn-sm btn-primary mt-2">Add Friend</button>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Friends Section -->
+  <div class="card">
+    <div class="card-header d-flex align-items-center gap-2">
+      <i class="bi bi-people-fill"></i>
+      <span>Friends</span>
+      <span class="badge text-bg-secondary ms-auto"><%= (profile.friends && profile.friends.length) || 0 %></span>
+    </div>
+
+    <ul class="list-group list-group-flush">
+      <% if (profile.friends && profile.friends.length) { %>
+        <% profile.friends.forEach(friend => { %>
+          <li class="list-group-item d-flex align-items-center gap-3">
+            <img
+              src="<%= friend.avatarUrl || '/uploads/avatars/placeholder.png' %>"
+              alt="<%= friend.username %>"
+              class="rounded-circle"
+              width="40" height="40">
+            <%= friend.username %>
+          </li>
+        <% }) %>
+      <% } else { %>
+        <li class="list-group-item text-muted">No friends yet</li>
+      <% } %>
+    </ul>
+  </div>
+
+  <% if (profile.address) { %>
+  <div class="card mt-3">
+    <div class="card-header d-flex align-items-center gap-2">
+      <i class="bi bi-geo-alt-fill"></i>
+      <span>Location</span>
+      <small class="text-muted ms-auto"><%= profile.address %></small>
+    </div>
+    <div class="card-body">
+      <div class="ratio ratio-16x9">
+        <iframe
+          src="https://www.google.com/maps?q=<%= encodeURIComponent(profile.address) %>&output=embed"
+          loading="lazy"
+          style="border:0;"
+          allowfullscreen
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+    </div>
+  </div>
+<% } else { %>
+  <p class="text-muted mt-3">No address set for this profile.</p>
+<% } %>
+
+
+
+
+
+</div>
+
+

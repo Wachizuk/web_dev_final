@@ -8,8 +8,8 @@
           <!-- Display name -->
           <div class="form-group">
             <label for="displayName" class="form-label">Display name</label>
-            <input id="displayName" name="displayName" type="text" class="text-input"
-                   placeholder="Group Number 3" required />
+            <input id="displayName" name="displayName" type="text" class="text-input" placeholder="Group Number 3"
+              required />
             <p class="help-text">This is what users will see.</p>
           </div>
 
@@ -17,22 +17,32 @@
           <div class="form-group">
             <label for="description" class="form-label">Group description</label>
             <textarea id="description" name="description" rows="3" class="text-area"
-                      placeholder="What is this group about?"></textarea>
+              placeholder="What is this group about?"></textarea>
           </div>
 
           <!-- Admins -->
           <div class="form-group">
             <label for="admins" class="form-label">Admins (usernames)</label>
-            <input id="admins" name="admins" type="text" class="text-input"
-                   placeholder="alice, bob" />
+            <input id="admins" name="admins" type="text" class="text-input" placeholder="alice, bob" />
             <p class="help-text">Comma-separated usernames. The creator is added automatically.</p>
           </div>
 
           <!-- Managers -->
           <div class="form-group">
             <label for="managers" class="form-label">Managers (usernames)</label>
-            <input id="managers" name="managers" type="text" class="text-input"
-                   placeholder="dana, eli" />
+            <input id="managers" name="managers" type="text" class="text-input" placeholder="dana, eli" />
+          </div>
+
+          <!-- Cover image -->
+          <div class="form-group">
+            <label for="cover" class="form-label">Cover image (optional)</label>
+            <button id="coverPickBtn" type="button" class="btn btn-sm btn-primary mt-2">
+              Change Cover
+            </button>
+            <span id="coverImageHint" class="form-text ms-2">Prefer to use 3:1 ratio image, if not image will be cropped!</span>
+
+            <!-- Hidden file input -->
+            <input type="file" id="groupCover" accept="image/png, image/jpeg, image/webp" style="display:none">
           </div>
 
           <button type="submit" class="primary-btn w-full">Create group</button>

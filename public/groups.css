@@ -1,0 +1,54 @@
+/* === Group Feed Header (banner) === */
+.group-header {
+  margin-bottom: 16px;
+}
+
+.group-header .group-cover {
+  display: block;
+  width: 100%;        
+  max-width: 100%;
+  aspect-ratio: 3 / 1;
+  object-fit: cover;  
+  border-radius: 8px; /* only if your cards already use rounded corners */
+}
+
+
+/* === 2 MAIN CONTENT COLS part === */
+
+#group-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+#group-columns .post-list {
+  width: 100%;          
+  justify-self: stretch;
+}
+
+#group-columns .left-col { min-width: 0; }
+#group-columns .right-col { min-width: 0; }
+
+@media (max-width: 1000px) {
+  #group-columns {
+    grid-template-columns: 1fr; /* stack on small screens */
+  }
+}
+
+#group-about { margin-bottom: 1rem; border-radius: 4px; }
+
+#group-about .post-title {
+  margin: 0;
+  padding: 0.75rem 1rem 0; 
+}
+
+#group-about .post-block { padding: 0 1rem 0.75rem; }
+
+#group-about .post-text { margin: 0; white-space: pre-wrap; }
+
+
+
+
+
+/* === Create-Group Styling ===*/
