@@ -21,6 +21,7 @@ router.route('/edit/:id')
 
 router.patch('/toggleLike/:id', userController.isLoggedIn, postController.toggleLike);
 // router.patch('/removeGroup/:id', userController.isLoggedIn, postController.removeGroup);
+router.get('/group/:groupId', userController.isLoggedIn, postController.getAllGroupPosts);
 
 router.route("/:id")
 .get(userController.isLoggedIn, postController.getPostById)
