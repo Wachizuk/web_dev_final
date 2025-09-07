@@ -18,6 +18,12 @@
           </div>
         </li>
       </ul>
+
+      <li class="nav-item list-unstyled ms-2">
+        <span id="nav-time" class="clock-chip btn btn-dark btn-sm disabled" aria-disabled="true"
+          data-tz="<%= typeof tz !== 'undefined' ? tz : 'Asia/Jerusalem' %>">--:--</span>
+      </li>
+
     </div>
     <!-- left end
          middle start -->
@@ -30,9 +36,10 @@
     </div>
 
     <!-- middle end -->
-    
-<!-- right side start -->
+
+    <!-- right side start -->
     <div id="top-nav-right-col" class="col-3 nav-col">
+
       <form id="top-nav-search-form" role="search" class="d-flex justify-content-end">
         <div id="top-nav-search-group" class="input-group input-group-sm" style="max-width: 520px;">
           <!-- scope segmented control -->
