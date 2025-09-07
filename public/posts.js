@@ -142,6 +142,15 @@ async function getPostCard(postId) {
       likeBtn.querySelector(".post-num-of-likes").textContent = newNumOfLikes;
     });
 
+    postCard.querySelectorAll(".post-group")?.forEach((elem) => {
+      elem.addEventListener('click', async (e) => {
+        const btn = e.target.closest('button');
+        const groupName = btn.dataset.groupName;
+        await renderContentWindow(routes.groups.groupName(groupName));
+        window.scroll({top: 0, behavior: "smooth"})
+      })
+    })
+
     return postCard;
   } catch (err) {
     console.error(
@@ -162,13 +171,14 @@ async function getPostCard(postId) {
  * create post on server
  * @param {String} title
  * @param {ContentBlock[]} contentBlocks
+ * @param {String} group - group id
  * @returns {Promise<Post>}
  */
-async function createPost(title, contentBlocks) {
+async function createPost(title, contentBlocks, groupId = null) {
   const res = await fetch(routes.posts.create, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title, contentBlocks }),
+    body: JSON.stringify({ title, contentBlocks, group: groupId }),
   });
 
   if (!res.ok) {

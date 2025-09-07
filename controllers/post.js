@@ -2,22 +2,23 @@ const postService = require("../services/post");
 const groupService = require("../services/group");
 const fs = require("fs");
 const path = require("path");
+const userService = require("../services/user");
 
 const handlePostErrors = async (req, res, err) => {
-    switch (err.code) {
-      // non default errors are console log because they are related to client errors and not server errors
-      case "NOT_FOUND":
-        console.log(`error code: ${err.code}, error messge: ${err.message}`);
-        return res.status(404).json({ message: "post not found" });
-      case "NOT_ALLOWED":
-        console.log(`error code: ${err.code}, error messge: ${err.message}`);
-        return res.status(403);
-      default:
-        console.error(err.message);
-        res.status(500).json({ message: "internal server error" });
-        break;
-    }
-}
+  switch (err.code) {
+    // non default errors are console log because they are related to client errors and not server errors
+    case "NOT_FOUND":
+      console.log(`error code: ${err.code}, error messge: ${err.message}`);
+      return res.status(404).json({ message: "post not found" });
+    case "NOT_ALLOWED":
+      console.log(`error code: ${err.code}, error messge: ${err.message}`);
+      return res.status(403);
+    default:
+      console.error(err.message);
+      res.status(500).json({ message: "internal server error" });
+      break;
+  }
+};
 
 const getAllPosts = async (req, res) => {
   let posts = null;
@@ -31,7 +32,7 @@ const getPostById = async (req, res) => {
   try {
     post = await postService.getPostById(req.params.id);
   } catch (err) {
-    await handlePostErrors(req, res, err)
+    await handlePostErrors(req, res, err);
   }
 
   if (post) {
@@ -52,6 +53,9 @@ const getPostCardById = async (req, res) => {
   }
 
   if (post) {
+    await post.populate("author", "username");
+    await post.populate("group", "groupName");
+    if(!post.author) post.author = {username: "DELETED_USER"}
     post.likedByUser = post.likes.includes(req.session._id);
     post.numOfLikes = post.likes.length;
     post.createdAtFormatted = postService.formatPostDate(post.createdAt);
@@ -92,10 +96,12 @@ const renderMainFeed = async (req, res) => {
 
 const createPost = async (req, res) => {
   const author = req.session._id;
-  console.log("author is:" + author);
+  console.log("author of new post is:" + author);
   const title = req.body.title;
   const contentBlocks = req.body.contentBlocks;
-  const group = req.session.group;
+  const group = req.body.group ? req.body.group : null;
+
+  console.log("group of new post is: " + group)
 
   try {
     const post = await postService.createPost(
@@ -118,16 +124,11 @@ const createPost = async (req, res) => {
 };
 
 const updatePostContent = async (req, res) => {
-  try {
-      console.log("here " + req.session._id);
-  } catch (error) {
-    console.error(error.message);
-  }
-
   const userId = req.session._id;
   const post = {};
   post.title = req.body.title;
-  post.content = req.body.content
+  post.content = req.body.content;
+  post.group = req.body.group ? req.body.group : null;
   post._id = req.params.id;
 
   try {
@@ -174,17 +175,38 @@ const deletePost = async (req, res) => {
 };
 
 const getCreatePostWindow = async (req, res) => {
-  res.render("main/partials/create-post", { groupName: req.params.groupName });
+  let groups = await userService.getUserGroups(req.session._id);
+
+  groups = groups ? groups : [];
+  res.render("main/partials/create-post", {
+    groups,
+    groupName: req.params.groupName,
+  });
 };
 
 const getEditPostWindow = async (req, res) => {
-  const permissions = await postService.getPostPermissions(req.params.id, req.session._id)
-  if(permissions.includes(postService.PERMISSIONS.EDIT)) {
+  const permissions = await postService.getPostPermissions(
+    req.params.id,
+    req.session._id
+  );
+  if (permissions.includes(postService.PERMISSIONS.EDIT)) {
     const post = await postService.getPostById(req.params.id);
-    await post.populate('group', 'groupName');
-    res.render("main/partials/edit-post", { postId: req.params.id,  groupName: post.group ? post.group.groupName : null});
+    let groupName = null;
+    if (post.group) {
+      await post.populate("group", "groupName");
+      groupName = post.group.groupName;
+    }
+
+    let groups = await userService.getUserGroups(req.session._id);
+    groups = groups ? groups : [];
+
+    res.render("main/partials/edit-post", {
+      postId: req.params.id,
+      groups,
+      groupName,
+    });
   } else {
-    res.status(403).json("user is not allowed to edit this post")
+    res.status(403).json("user is not allowed to edit this post");
   }
 };
 
@@ -194,11 +216,11 @@ const toggleLike = async (req, res) => {
 
   try {
     const numOfLikes = await postService.toggleLike(postId, userId);
-    res.status(200).json({numOfLikes});
+    res.status(200).json({ numOfLikes });
   } catch (err) {
     await handlePostErrors(req, res, err);
   }
-}
+};
 
 module.exports = {
   getPostById,
@@ -211,5 +233,5 @@ module.exports = {
   createPost,
   getCreatePostWindow,
   getEditPostWindow,
-  toggleLike
+  toggleLike,
 };

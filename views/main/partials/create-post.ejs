@@ -16,10 +16,18 @@
       <select class="form-select" name="" id="group-select">
         <% if (groupName) { %>
         <option value="">none</option>
-        <option value="<%= groupName %>" selected><%=groupName%></option>
         <% } else { %>
         <option value="" selected>none</option>
-        <% } %>
+        <% } for( let index = 0; index < groups.length; index++ ) { if
+        (groupName == groups[index].groupName) { %>
+        <option value="<%= groups[index]._id %>" selected>
+          <%=groups[index].groupName%>
+        </option>
+        <% } else { %>
+        <option value="<%= groups[index]._id %>">
+          <%=groups[index].groupName%>
+        </option>
+        <% }} %>
       </select>
     </div>
 

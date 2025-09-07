@@ -3,14 +3,19 @@ const userService = require("./user");
 const Validator = require("./validator");
 const path = require("path");
 
-const PLACEHOLDER_LOCATION = path.join("uploads", "posts", "missing", "placeHolder.png");
+const PLACEHOLDER_LOCATION = path.join(
+  "uploads",
+  "posts",
+  "missing",
+  "placeHolder.png"
+);
 
 const getAllPostIds = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) return null;
-  Post.find({}, { _id: 1 });
+  return await Post.find({}, { _id: 1 });
 };
 
-const getAllPosts = async () => Post.find();
+const getAllPosts = async () => await Post.find();
 
 const getPostById = async (id) => {
   return await Post.findById(id);
@@ -74,18 +79,15 @@ async function createPost(author, title, contentBlocks, group) {
   const postObj = new Post({
     title: title,
     author: author,
-    authorUsername: user.username,
     // for blocks the path is decided after the user uploads a file and it gets saved in the server
     // this is done after create
     content: contentBlocks.map((block) => {
       if (["image", "video"].includes(block.type))
-        block.value = PLACEHOLDER_LOCATION
+        block.value = PLACEHOLDER_LOCATION;
       return block;
     }),
-    // group: group ? group : null,
-    group: null,
+    group: group ? group : null,
     likes: [],
-    comments: [],
   });
 
   //save returns the newly created object
@@ -218,25 +220,19 @@ async function updatePost(post, userId) {
 
   if (permissions.includes(PERMISSIONS.EDIT)) {
     oldPost.title = post.title ? post.title : oldPost.title;
-    if (newPost.content) {
-      const oldContent = oldPost.content;
-      const newContent = newPost.content;
+    if (post.content) {
+      const newContent = post.content;
 
-      //keep old content paths if no change in new, otherwise swap to place holder
       newContent.forEach((block, index) => {
-        if (
-          index >= oldContent.length ||
-          block.value != oldContent[index].value
-        ) {
-          if (["image", "video"].includes(block.type))
-            block.value = PLACEHOLDER_LOCATION;
-        }
+        if (["image", "video"].includes(block.type) && !block.value)
+          block.value = PLACEHOLDER_LOCATION;
       });
 
       oldPost.content = newContent;
+      oldPost.group = post.group;
     }
     //attempt to change without permissions
-  } else if (!post.title || !post.content) {
+  } else if (!post.title || !post.content || !post.group) {
     const err = new Error(
       `user '${userId}' is blocked from  updating content of post '${oldPost._id}'`
     );

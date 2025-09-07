@@ -6,8 +6,11 @@
           <h4 class="card-title post-title"><%=post.title%></h4>
         </div>
         <div class="col-6 post-header-right-side">
+          <% if (post.group) { %>
+          <button class="btn post-group" data-group-name="<%=post.group.groupName%>">in <%= post.group.groupName %></button>
+          <% } %>
           <div class="post-created-date"><%=post.createdAtFormatted %></div>
-          <a class="post-author" href="#"><%= post.authorUsername %></a>
+          <a class="post-author" href="#"><%= post.author.username %></a>
         </div>
       </div>
     </div>
@@ -38,10 +41,6 @@
         class="bi post-like-icon <% if (post.likedByUser) { %>bi-heart-fill<% } else { %> bi-heart <% } %>"
       ></i>
       <span class="post-num-of-likes"><%= post.numOfLikes %></span>
-    </button>
-    <button class="btn post-footer-btn post-comments-btn">
-      <i class="bi bi-chat-dots post-chat-icon"></i>
-      <span class="post-num-of-comments"><%= post.comments.length %></span>
     </button>
     <% if (post.canEdit) { %>
     <button

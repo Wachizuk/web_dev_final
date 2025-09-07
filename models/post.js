@@ -10,34 +10,13 @@ const contentBlockSchema = new mongoose.Schema(
   { _id: false } // does not form id
 );
 
-// currently does not support nesting because
-// it either requires complex queries or has scalability issues on simple implementations
-// right now its directly imbeded in the post, to improve will require seperation
-const commentSchema = new mongoose.Schema(
-  {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    content: { type: String, required: true }, //currently text only for simplisity
-    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
-  },
-  { // adds createdAt and updatedAt with auto updates only on comment change
-    timestamps: true, 
-  }
-);
-
 // Define a schema for the 'post' collection
 const postSchema = new mongoose.Schema({
   title: { type: String, required: true },
   author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  //save username directly and index for easy searching
-  authorUsername: { type: String, index: true },
   group: {type: mongoose.Schema.Types.ObjectId, ref: "Group"},
   content: [contentBlockSchema], // allows for multiple content types on same post
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  comments: [commentSchema],
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 }, {timestamps: true});
 
 

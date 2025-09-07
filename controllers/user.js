@@ -35,7 +35,7 @@ function logout(req, res) {
 // Render main page
 async function mainPage(req, res) {
   try {
-    const groups = await groupService.getAllGroups();
+    const groups = await userService.getUserGroups(req.session._id);
     res.render(viewMainPage, {
       email: req.session.email,
       username: req.session.username,

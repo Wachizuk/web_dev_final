@@ -14,7 +14,8 @@ const getUserById = async (id) => {
 
 
 const getUserGroups = async (id) => {
-  return await User.findById(id, {groups: 1});
+  const user =  await User.findById(id, {groups: 1}).populate("groups");
+  return user.groups;
 }
 
 const getIdByUsername = async (username) => {

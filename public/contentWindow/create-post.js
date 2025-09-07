@@ -16,6 +16,16 @@ function createContentBlock() {
   label.textContent = "Content Type";
   label.for = "content";
 
+  //remove btn
+  const remBtn = document.createElement("button");
+  remBtn.classList.add("btn");
+  remBtn.textContent = "remove part";
+  remBtn.type = "button";
+  remBtn.addEventListener("click", () => {
+    contentBlock.remove();
+  });
+  contentBlock.appendChild(remBtn);
+
   //type selection
   const select = document.createElement("select");
   select.classList.add("form-select", "content-type");
@@ -152,9 +162,10 @@ document
   .getElementById("create-post-form")
   .addEventListener("submit", async (e) => {
     e.preventDefault();
-    const { title, contentBlocks, mediaContentBlocks } = extractFormData();
+    const { title, contentBlocks, mediaContentBlocks, group } =
+      extractFormData();
 
-    if(!title) {
+    if (!title) {
       alert("title missing");
       return;
     }
@@ -162,19 +173,19 @@ document
     let countTextInputs = 0;
 
     contentBlocks.forEach((block, index) => {
-      if(block.type == "text") countTextInputs++
-      if(block.type == "text" && !(block.value.trim())) {
+      if (block.type == "text") countTextInputs++;
+      if (block.type == "text" && !block.value.trim()) {
         alert(`missing input at entry ${index + 1}`);
         return;
       }
-    })
+    });
 
-    if(countTextInputs + mediaContentBlocks.length !== contentBlocks.length) {
+    if (countTextInputs + mediaContentBlocks.length !== contentBlocks.length) {
       alert(`missing media input`);
-        return;
+      return;
     }
 
-    const post = await createPost(title, contentBlocks);
+    const post = await createPost(title, contentBlocks, group);
 
     if (!post) {
       alert("failed creating post");
@@ -209,13 +220,14 @@ document
       await deletePost(postId);
       alert("Failed uploading post files :(");
     } else {
-      alert("Post Created :)")
+      alert("Post Created :)");
       renderContentWindow(routes.mainFeed);
     }
   });
 
 function extractFormData() {
   const title = document.getElementById("input-post-title").value.trim();
+  const group = document.getElementById("group-select").value;
   const contentBlocks = [];
   const mediaContentBlocks = [];
 
@@ -229,7 +241,7 @@ function extractFormData() {
         contentBlocks.push({ type, value: input.value.trim() });
       } else if (type === "image" || type === "video") {
         contentBlocks.push({ type, value: "value" });
-        if(!input.files || input.files.length === 0) return;
+        if (!input.files || input.files.length === 0) return;
         mediaContentBlocks.push({
           type,
           blockIndex: index,
@@ -238,5 +250,5 @@ function extractFormData() {
       }
     });
 
-  return { title, contentBlocks, mediaContentBlocks };
+  return { title, contentBlocks, mediaContentBlocks, group };
 }
