@@ -134,7 +134,13 @@ const saveGroupCover = async (req, res) => {
     await groupService.updateGroupByName(groupName, { $set: { coverFile: filename } });
 
     return res.status(201).json({ url, message: "Group cover uploaded successfully" });
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Upload failed" });
+  }
+};
 
+// -----------------------------------end of group cover image upload-----------------------------------
 
 
 module.exports = { uploadAvatar, getAvatar, saveGroupCover , uploadPostFile, getPostFile };
