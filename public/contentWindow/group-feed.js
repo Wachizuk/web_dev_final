@@ -1,9 +1,34 @@
-import { renderAllPosts } from "../posts.js";
+import { renderAllPosts, getPostCard } from "../posts.js";
 import { renderContentWindow } from "../utils/renderer.js";
 import { routes } from "../utils/routes.js";
 
 console.log("group feed loaded");
-renderAllPosts()
+//renderAllPosts()
+renderGroupPosts()
+
+async function renderGroupPosts() {
+  const list = document.getElementById("post-list");
+  const gid  = list?.dataset.groupid;      // we set this in the EJS
+  if (!gid) return renderAllPosts();       // fallback: original behavior
+
+  list.innerHTML = "";
+  const res   = await fetch(`/posts/group/${gid}`);
+  const posts = res.ok ? await res.json() : [];
+
+  if (!posts.length) {
+    list.innerHTML = "<li class='post-list-item'>No posts in this group</li>";
+    return;
+  }
+
+  for (const p of posts) {
+    const card = await getPostCard(p._id);
+    if (!card) continue;
+    const li = document.createElement("li");
+    li.className = "post-list-item";
+    li.appendChild(card);
+    list.appendChild(li);
+  }
+}
 
 //------------------------------ Members card --------------------------------
 

@@ -3,6 +3,7 @@ const groupService = require("../services/group");
 const fs = require("fs");
 const path = require("path");
 const userService = require("../services/user");
+const Post = require("../models/post");
 
 const handlePostErrors = async (req, res, err) => {
   switch (err.code) {
@@ -37,6 +38,18 @@ const getAllPosts = async (req, res) => {
   let posts = null;
   posts = await postService.getAllPosts();
   return res.json(posts);
+};
+
+const getAllGroupPosts = async (req, res) => {
+  try {
+    const gid = req.params.groupId || req.query.groupId;
+    if (!gid) return res.json([]); // no id then empty list
+    const posts = await Post.find({ group: gid }).sort({ createdAt: -1 }).lean();
+    res.json(posts);
+  } catch (err) {
+    console.error("getAllGroupPosts failed:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 };
 
 //returns a json of the post
@@ -270,6 +283,7 @@ module.exports = {
   getPostById,
   getPostCardById,
   getAllPosts,
+  getAllGroupPosts,
   getPostFile,
   renderMainFeed,
   renderMyFeed,
