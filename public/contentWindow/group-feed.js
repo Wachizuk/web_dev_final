@@ -1,4 +1,6 @@
 import { renderAllPosts } from "../posts.js";
+import { renderContentWindow } from "../utils/renderer.js";
+import { routes } from "../utils/routes.js";
 
 console.log("group feed loaded");
 renderAllPosts()
@@ -60,11 +62,27 @@ function fillList(id, arr, isAdmin, currentRole) {
       return '' +
   '<li class="members-item">' +
 
+
     // Row 1: name (left) + Add Friend (right)
     '<div class="members-top">' +
       '<span class="members-name">' + name + '</span>' +
-      '<button type="button" class="btn btn-sm btn-link members-action" ' +
-              'data-action="friend-toggle" data-user="' + String(uid) + '">Add Friend</button>' +
+      (function () {
+        var isFriend = !!(u && (u.isFriend || u.friend)); // use whatever flag your API returns
+        var state    = isFriend ? 'friend' : 'not-friend';
+        var label    = isFriend ? 'Remove Friend' : 'Add Friend';
+
+    // match the profile page’s classes/behavior
+        var btnCls = 'btn btn-sm friend-btn ' +
+                    (isFriend ? 'btn-outline-secondary' : 'btn-primary');
+
+        return '' +
+            '<button type="button" class="' + btnCls + '" ' +
+                    'data-action="friend-toggle" ' +
+                    'data-user="' + String(uid) + '" ' +
+                    'data-state="' + state + '">' +
+            label +
+            '</button>';
+        })() +
     '</div>' +
 
     // Row 2: admin-only role controls (labels depend on currentRole)
@@ -122,7 +140,55 @@ function initMembersButton() {
   });
 }
 
+async function friendBtnAction(btn) {
+  const uid   = btn.getAttribute('data-user');
+  let state   = btn.getAttribute('data-state') || 'not-friend'; // 'friend' | 'not-friend'
+  const method = (state === 'friend') ? 'DELETE' : 'POST';
 
+  if (!uid) return;
+
+  if (btn.dataset.busy === '1') return;
+  btn.dataset.busy = '1';
+
+  try {
+    const res = await fetch('/user/friends/' + encodeURIComponent(uid), {
+      method,
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const ct  = res.headers.get('content-type') || '';
+    const json = ct.includes('application/json') ? await res.json() : {};
+
+    if (!res.ok) {
+      const msg = json && (json.message || json.error);
+      throw new Error(msg || ('Request failed (' + res.status + ')'));
+    }
+
+    // prefer server truth; else infer from previous state
+    const nowFriend = (typeof json.isFriend !== 'undefined')
+      ? !!json.isFriend
+      : (state !== 'friend');
+
+    // update ALL friend-toggle buttons for this uid (mirrors profile)
+    document.querySelectorAll('[data-action="friend-toggle"][data-user="' + uid + '"]')
+      .forEach(function (b) {
+        b.setAttribute('data-state', nowFriend ? 'friend' : 'not-friend');
+        b.textContent = nowFriend ? 'Remove Friend' : 'Add Friend';
+
+        // profile-like styling
+        b.classList.toggle('btn-primary', !nowFriend);
+        b.classList.toggle('btn-outline-secondary', nowFriend);
+        b.classList.add('friend-btn'); // ensure class exists for consistent styling
+      });
+
+  } catch (err) {
+    console.error('[friends] error:', err);
+    alert(err.message || 'Action failed');
+  } finally {
+    btn.dataset.busy = '0';
+  }
+}
 
 //------------------------------ Members admin actions ----------------------------
 function initMembersAdminActions() {
@@ -136,6 +202,18 @@ function initMembersAdminActions() {
 
     var action = actionBtn.getAttribute('data-action'); // 'remove-member' | 'make-admin' | 'make-manager' | 'remove-admin' | 'remove-manager'
     if (!action) return;
+
+    console.log(action)
+
+    if(action == "friend-toggle") {
+      try {
+        friendBtnAction(actionBtn);
+      } catch (e) {
+          console.error(e.message)
+      }
+      
+      return
+    }
 
     // Only handle the admin controls; ignore other buttons like friend-toggle
     var isRoleAction = (action === 'make-admin' || action === 'make-manager' || action === 'remove-admin' || action === 'remove-manager');
@@ -238,8 +316,149 @@ function initFollowButton() {
   });
 }
 
+//----------------------------------------------------------------------------------
+
+//------------------------------ Group settings card ----------------------------
+
+
+function initGroupSettingsCard() {
+  const btn = document.getElementById("group-settings-btn");
+  const card = document.getElementById("group-settings-card");
+  if (!btn || !card) {
+    console.error('Settings card elements not found:', {
+      btn: !!btn,
+      card: !!card
+    });
+    return;
+  }
+
+  const form = card.querySelector("#edit-group-form");
+  if (!form) {
+    console.error('Edit form not found in settings card');
+    return;
+  }
+
+
+  const groupName = card.dataset.group || "";
+//   const form = card.querySelector("#edit-group-form");
+  const delBtn = card.querySelector("#delete-group-btn");
+
+  // Cover picker (same as create-group)
+  const pickBtn = card.querySelector("#coverPickBtnEdit");
+  const fileInput = card.querySelector("#groupCoverEdit");
+
+  if (pickBtn && fileInput) {
+    pickBtn.addEventListener("click", () => fileInput.click());
+  }
+
+  // Toggle show and scroll(Bootstrap .d-none)
+  btn.addEventListener("click", () => {
+    if (card.classList.contains("d-none")) {
+      card.classList.remove("d-none"); // ensure visible
+    }
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // Submit edits
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // optional cover upload
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      const f = fileInput.files[0];
+      const up = await fetch(`/uploads/groups/${groupName}/cover`, {
+        method: "POST",
+        headers: { "Content-Type": f.type || "application/octet-stream" },
+        body: f,
+      });
+      if (!up.ok) {
+        const t = await up.text().catch(() => "Upload failed");
+        alert(t);
+        return;
+      }
+    }
+
+    // other fields
+    const fd = new FormData(form);
+    const nextName = (fd.get("newGroupName") || "").trim();
+    const desc = (fd.get("description") || "").trim();
+
+    const body = { displayName: nextName, description: desc };
+
+    const res = await fetch(`/groups/${groupName}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const t = await res.text().catch(() => "Server error");
+      alert(`Update failed: ${t}`);
+      return;
+    }
+
+    const data = await res.json().catch(() => ({}));
+    const finalName = data.groupName || groupName;
+
+    
+    renderContentWindow(routes.groups.groupName(finalName));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+ 
+  });
+
+  // Delete group
+  delBtn.addEventListener("click", async () => {
+    if (!confirm("Are you sure you want to DELETE this group?")) return;
+
+    const res = await fetch(`/groups/${groupName}`, { method: "DELETE" });
+    if (!res.ok) {
+      const t = await res.text().catch(() => "Server error");
+      alert(`Delete failed: ${t}`);
+      return;
+    }
+    renderContentWindow(routes.mainFeed);
+  });
+}
+//----------------------------------------------------------------------------------
 
 initFollowButton();
 initMembersButton();
 initMembersCard();
 initMembersAdminActions();
+initGroupSettingsCard();
+
+// async function friendBtnAction(btn) {
+//   console.log(btn)
+//     const friendUid = btn.dataset.user;
+//     const method = btn.classList.contains("add-friend") ? "POST" : "DELETE"
+
+//   try {
+//     const res = await fetch(`/user/friends/${encodeURIComponent(friendUid)}`, {
+//       method ,
+//       credentials: "same-origin",        // send cookies/session
+//       headers: { "Accept": "application/json" },
+//     });
+
+//     const ct = res.headers.get("content-type") || "";
+//     const payload = ct.includes("application/json")
+//       ? await res.json()
+//       : { success: false, message: await res.text() };
+
+
+//     if (!res.ok || !payload.success) {
+//       throw new Error(payload.message || `Request failed (${res.status})`);
+//     }
+   
+
+//     btn.classList.toggle("add-friend");
+//     btn.classList.toggle("remove-friend");
+//     btn.textContent = btn.classList.contains("add-friend") ? "Add friend" : "Remove friend"
+
+//   } catch (err) {
+//     console.error("[friends] error:", err);
+//     alert(err.message || "Action failed");
+//   }
+// }
+
+
+//----------------------------------------------------------------------------------

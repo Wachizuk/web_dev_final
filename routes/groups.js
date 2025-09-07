@@ -32,4 +32,12 @@ router.post('/:groupName/members/:userId/role', groupController.setMemberRole);
 // get group members list
 router.get("/:groupName/members", userController.isLoggedIn, groupController.getMembers);
 
+
+
+// edit group name/description
+router.patch('/:groupName', groupController.updateGroup);
+
+// delete group
+router.delete('/:groupName', groupController.deleteGroup);
+
 module.exports = router;

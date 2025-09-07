@@ -2,7 +2,9 @@ const groupService = require("../services/group");
 const { toUsernameArray, findMissingUsernames, findUserIdsByUsernames } = require("../services/user");
 
 const createGroupRoute = "main/partials/create-group";
-const groupFeedRoute = "main/partials/group-feed";
+// const groupFeedRoute = "main/partials/group-feed";
+const postModel = require("../models/post");
+const groupModel = require("../models/group");
 
 // GET /groups/new - render the create form
 async function createGroupPage(req, res) {
@@ -170,4 +172,94 @@ async function setMemberRole(req, res) {
 
 // --------------------------------------------------------------------------------------------------------
 
-module.exports = { groupPage, createGroupPage, createGroup, getMembership, toggleFollow, getMembers, removeMember, setMemberRole };
+
+// --------------------------------------- Edit / Delete Group related function ---------------------------------
+
+const services = require('../services/group');
+const Group = require('../models/group'); // used for delete
+
+async function updateGroup(req, res) {
+  try {
+    const viewerId  = req.session?._id;
+    const current   = req.params.groupName;
+    const { displayName, description } = req.body || {};
+
+    const group = await services.getGroupByName(current);
+    if (!group) return res.status(404).send('Group not found');
+
+    // admin-only
+    const isAdmin = Array.isArray(group.members?.admins) &&
+      group.members.admins.some(a => String(a) === String(viewerId));
+    if (!isAdmin) return res.status(403).send('Admins only');
+
+    const updates = {};
+    if (typeof description === 'string') updates.description = description.trim();
+
+    let finalGroupName = group.groupName;
+
+    // If displayName provided, update it and normalize to groupName
+    if (typeof displayName === 'string' && displayName.trim()) {
+      const cleanDisplay = displayName.trim();
+      updates.displayName = cleanDisplay;
+
+      // normalize to groupName
+      const normalize =
+        (typeof services.normalizeGroupName === 'function')
+          ? services.normalizeGroupName
+          : (s) => String(s).toLowerCase().trim().replace(/[^a-z0-9\- ]/g,'').replace(/\s+/g,'-');
+
+      const derived = normalize(cleanDisplay);
+
+      if (derived !== group.groupName) {
+        const exists = await services.getGroupByName(derived);
+        if (exists) return res.status(409).send('Group name already exists');
+        updates.groupName = derived;
+        finalGroupName = derived;
+      }
+    }
+
+    const saved = await services.updateGroupByName(current, updates);
+    if (!saved) return res.status(500).send('Failed to update group');
+
+    const finalDisplay = (typeof updates.displayName === 'string' && updates.displayName.trim())
+  ? updates.displayName.trim()
+  : group.displayName;
+
+    res.json({ ok: true, groupName: finalGroupName, displayName: finalDisplay });
+  } catch (err) {
+    console.error('updateGroup error:', err);
+    res.status(500).send('Server error');
+  }
+};
+
+// DELETE
+async function deleteGroup(req, res) {
+  try {
+    const viewerId  = req.session?._id;
+    const groupName = req.params.groupName;
+
+    const group = await services.getGroupByName(groupName);
+    if (!group) return res.status(404).send('Group not found');
+
+    // admin-only
+    const isAdmin = Array.isArray(group.members?.admins) &&
+      group.members.admins.some(a => String(a) === String(viewerId));
+    if (!isAdmin) return res.status(403).send('Admins only');
+
+
+    // detach posts from this group first:
+    await postModel.updateMany({ group: group._id }, { $unset: { group: 1 } });
+
+    // delete the group document
+    await groupModel.deleteOne({ _id: group._id });
+
+
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('deleteGroup error:', err);
+    res.status(500).send('Server error');
+  }
+};
+
+module.exports = { groupPage, createGroupPage, createGroup, getMembership, toggleFollow, getMembers, removeMember, setMemberRole, updateGroup, deleteGroup };
