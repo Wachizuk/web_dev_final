@@ -12,11 +12,12 @@ const groups = {
 
 const posts = {
         cardById: (id) => `${base.posts}/${id}`,
-
-        create: `${base.posts}/create`, 
+        create: `${base.posts}/create`,
         edit: (postId) => `${base.posts}/edit/${postId}`,
         delete: (postId) => `${base.posts}/${postId}`,
-        changeGroup: (postId) => `${base.posts}/changeGroup/${postId}`,
+        removeGroup: (postId) => `${base.posts}/removeGroup/${postId}`,
+        toggleLike: (postId) => `${base.posts}/toggleLike/${postId}`,
+        uploadFile: (postId, blockIndex, fileName) => `uploads/posts/${postId}/${blockIndex}/${fileName}`
     }
 
 const users = {

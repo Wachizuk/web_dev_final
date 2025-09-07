@@ -19,6 +19,9 @@ router.route('/edit/:id')
 .get(userController.isLoggedIn, postController.getEditPostWindow)
 .patch(userController.isLoggedIn, postController.updatePostContent);
 
+router.patch('/toggleLike/:id', userController.isLoggedIn, postController.toggleLike);
+// router.patch('/removeGroup/:id', userController.isLoggedIn, postController.removeGroup);
+
 router.route("/:id")
 .get(userController.isLoggedIn, postController.getPostById)
 .delete(userController.isLoggedIn, postController.deletePost);

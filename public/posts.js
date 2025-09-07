@@ -34,8 +34,7 @@ import { routes } from "./utils/routes.js";
  * @property {string} updatedAt
  */
 
-
-
+// GETTERS
 async function getAllPosts() {
   try {
     const res = await fetch(`/posts`);
@@ -47,15 +46,45 @@ async function getAllPosts() {
     return await res.json();
   } catch (err) {
     console.error(
-      console.error(
-        `failed getting post card for ${postId}, reason: ${err.message}`
-      )
+      `failed getting post card for ${postId}, reason: ${err.message}`
     );
   }
 }
 
+/** gets posts with filtering options
+ * @param {Object} filters -object with filters
+ * @param {String[] | String} filters.groupIds - filter by group
+ * @param {String[] | String} filters.authorIds - filter by authors
+ * @param {String} filters.searchText - filter by title and content text
+ * @param {String} filters.numOfLikes - minimum likes
+ * @returns {Promise<Post[]>} - list of post objects
+ */
+async function getPosts(filters) {
+  const searchPayload = {};
 
+  if (filters.groupIds) searchPayload.groupIds = [...filters.groupIds];
+  if (filters.authorIds) searchPayload.authorId = [...filters.authorIds];
+  if (filters.searchText) searchPayload.searchText = filters.searchText;
+  if (filters.numOfLikes) searchPayload.numOfLikes = filters.numOfLikes;
 
+  try {
+    const res = await fetch(routes.posts.search, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(searchPayload),
+    });
+
+    if (!res.ok) {
+      throw new Error("failed post fetch");
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error(
+      `failed getting post card for ${postId}, reason: ${err.message}`
+    );
+  }
+}
 
 /**
  * gets post data from the server
@@ -72,12 +101,16 @@ async function getPost(postId) {
 
     return await res.json();
   } catch (err) {
-      console.error(
-        `failed getting post card for ${postId}, reason: ${err.message}`
-      )
+    console.error(
+      `failed getting post card for ${postId}, reason: ${err.message}`
+    );
   }
 }
-
+/**
+ * returns a psot card element already with event listeners from a post id
+ * @param {String} postId - post id to get
+ * @returns {Element}
+ */
 async function getPostCard(postId) {
   try {
     const res = await fetch(`/posts/card/${postId}`);
@@ -86,26 +119,164 @@ async function getPostCard(postId) {
       throw new Error(`response status code: ${res.status}`);
     }
 
-    return res.text();
+    const postString = (await res.text()).toString();
+
+    //transform from text into an element
+    const parser = new DOMParser();
+    const postCard = parser.parseFromString(postString, "text/html").body
+      .firstElementChild;
+
+    //add event listeners where needed
+    // edit btn redirect if exists
+    postCard
+      .querySelector(".post-edit-btn")
+      ?.addEventListener("click", () =>
+        renderContentWindow(routes.posts.edit(postId))
+      );
+    const likeBtn = postCard.querySelector(".post-like-btn");
+    likeBtn.addEventListener("click", async () => {
+      const heartIcon = likeBtn.querySelector("i");
+      const newNumOfLikes = await postToggleLike(postId);
+      heartIcon.classList.toggle("bi-heart-fill");
+      heartIcon.classList.toggle("bi-heart");
+      likeBtn.querySelector(".post-num-of-likes").textContent = newNumOfLikes;
+    });
+
+    return postCard;
   } catch (err) {
     console.error(
-      console.error(
-        `failed getting post card for ${postId}, error message: ${err.message}`
-      )
+      `failed getting post card for ${postId}, error message: ${err.message}`
     );
   }
 }
+
+//POST DATA CHANGERS
+
+/**
+ * @typedef {Object} ContentBlock
+ * @property {String} type - "text", "image", "video"
+ * @property {String} value - text content or file name depending on type
+ */
+
+/**
+ * create post on server
+ * @param {String} title
+ * @param {ContentBlock[]} contentBlocks
+ * @returns {Promise<Post>}
+ */
+async function createPost(title, contentBlocks) {
+  const res = await fetch(routes.posts.create, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, contentBlocks }),
+  });
+
+  if (!res.ok) {
+    const message = await res.json().message;
+    console.log(message);
+    throw new Error(message);
+  }
+
+  return await res.json();
+}
+
+async function removePostFromGroup(postId) {
+  const res = await fetch(routes.posts.removeGroup(postId), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ postId, group }),
+  });
+}
+
+/**
+ * toggles if the user likes the post in the server
+ * @param {*} postId
+ * @returns new number of likes
+ */
+async function postToggleLike(postId) {
+  const res = await fetch(routes.posts.toggleLike(postId), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const numOfLikes = (await res.json()).numOfLikes;
+  console.log("new num of likes: " + numOfLikes);
+
+  return numOfLikes;
+}
+
+/**
+ * updates a post on server, group field is optional
+ * @param {String} postId
+ * @param {String} title
+ * @param {ContentBlock[]} content
+ * @param {String?} groupId
+ */
+async function updatePost(postId, title, content, groupId) {
+  //done seperatly because group is optional
+  const updatePayload = { _id: postId, title, content };
+  if (groupId) updatePayload.group = groupId;
+
+  const res = await fetch(routes.posts.edit(postId), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updatePayload),
+  });
+
+  if (!res.ok) {
+    const message = await res.json().message;
+    console.log(message);
+    throw new Error(message);
+  }
+
+  return await res.json();
+}
+
+async function deletePost(postId) {
+  const res = await fetch(routes.posts.delete(postId), {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    const message = await res.json().message;
+    console.log(message);
+    throw new Error(message);
+  }
+}
+
+
+async function uploadPostFile(file, postId, blockIndex) {
+  try {
+    // send raw file to server
+    const buf = await file.arrayBuffer();
+    
+    // put block index in filename place intentionally
+    const res = await fetch(routes.posts.uploadFile(postId, blockIndex, blockIndex), {
+      method: "POST",
+      headers: { "Content-Type": file.type },
+      body: buf,
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      return data.url;
+    } else {
+      alert(data.error || "Failed to upload");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong");
+  }
+}
+
+//FRONT END STUFF
 
 function addPostCardToList(postCard) {
   const postList = document.getElementById("post-list");
   let liElem = document.createElement("li");
   liElem.classList.add("post-list-item");
 
-  liElem.innerHTML = postCard;
-  // const postEditBtn = liElem.querySelector("post-edit-btn");
-  // postEditBtn?.addEventListener('click', () => {
-  //   renderContentWindow(routes.posts.edit(postEditBtn.dateset.postId))
-  // });
+  liElem.appendChild(postCard);
   postList.appendChild(liElem);
 }
 
@@ -120,23 +291,11 @@ async function getAndAddPostCard(postId) {
   else addPostCardToList(postCard);
 }
 
-/* async function renderAllPosts() {
-  const posts = await getAllPosts();
-  posts.forEach((post) => {
-    console.log(post);
-    getAndAddPostCard(post._id);
-  });
-} */
-
-//new addition for filtering posts by groups
+/**
+ * renders all posts user has access to
+ */
 async function renderAllPosts() {
-  let posts;
-
-  // if (groupName) {
-  //   posts = await getAllPosts(); //will be switched to getPostsByGroup(groupName)
-  // } else {
-  posts = await getAllPosts();
-  // }
+  const posts = await getAllPosts();
 
   if (!Array.isArray(posts)) {
     postList.innerHTML =
@@ -154,79 +313,40 @@ async function renderAllPosts() {
   });
 }
 
-/**
- * @typedef {Object} ContentBlock
- * @property {String} type - "text", "image", "video"
- * @property {String} value - text content or file name depending on type
+/** renders posts with filtering options
+ * @param {Object} filters -object with filters
+ * @param {String[]} filters.groupIds- filter by group
+ * @param {String[]} filters.authorIds - filter by author
+ * @param {String} filters.searchText - filter by title and content text
+ * @param {String} filters.numOfLikes - minimum likes
+ * @returns
  */
+async function renderPosts(filters) {
+  posts = await getPosts(filters);
 
-/**
- * create post on server
- * @param {String} title
- * @param {ContentBlock[]} contentBlocks
- */
-async function createPost(title, contentBlocks) {
-  const res = await fetch(routes.posts.create, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title, contentBlocks }),
-  });
-
-  if (!res.ok) {
-    const message = await res.json().message
-    console.log(message)
-    throw new Error(message);
+  if (!Array.isArray(posts)) {
+    postList.innerHTML =
+      "<li class='post-list-item'> Error: could not load posts</li>";
+    return;
   }
 
-  return await res.json();
-}
-
-async function changePostGroup(postId, groupId) {
-  const res = await fetch(routes.posts.changeGroup(postId, groupId) , {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ postId, group }),
-  });
-}
-
-
-/**
- * updates a post on server
- * @param {String} postId
- * @param {String} title
- * @param {ContentBlock[]} content
- * @param {String} groupId
- */
-async function updatePost(postId, title, content, groupId) {
-  //done seperatly because group is optional
-  const updatePayload = {_id: postId, title, content};
-  if (groupId) updatePayload.group = groupId;
-
-  const res = await fetch(routes.posts.edit(postId), {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(updatePayload),
-  });
-
-  if (!res.ok) {
-    const message = await res.json().message
-    console.log(message)
-    throw new Error(message);
+  if (posts.length === 0) {
+    postList.innerHTML = "<li class='post-list-item'> No posts found</li>";
+    return;
   }
 
-  return await res.json();
-}
-
-async function deletePost(postId) {
-  const res = await fetch(routes.posts.delete(postId), {
-    method: "DELETE"
+  posts.forEach((post) => {
+    getAndAddPostCard(post._id);
   });
-
-  if (!res.ok) {
-    const message = await res.json().message
-    console.log(message)
-    throw new Error(message);
-  }
 }
 
-export { getPostCard, getPost, getAllPosts, renderAllPosts, createPost, updatePost, deletePost };
+export {
+  getPostCard,
+  getPost,
+  getAllPosts,
+  renderAllPosts,
+  createPost,
+  updatePost,
+  deletePost,
+  uploadPostFile
+};
