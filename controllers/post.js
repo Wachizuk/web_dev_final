@@ -59,7 +59,7 @@ const getPostCardById = async (req, res) => {
     post.likedByUser = post.likes.includes(req.session._id);
     post.numOfLikes = post.likes.length;
     post.createdAtFormatted = postService.formatPostDate(post.createdAt);
-    post.canEdit = req.session._id == post.author;
+    post.canEdit = req.session._id == post.author._id;
     res.render("../views/main/partials/post", { post });
   } else {
     res.status(404).json({ error: "Post not found" });
