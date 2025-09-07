@@ -1,0 +1,62 @@
+
+/* Custom font only for register block */
+@font-face {
+  font-family: "RegSans";
+  src: url("/fonts/RegSans.woff2") format("woff2");
+  font-display: swap;
+}
+
+.reg-scope {
+  font-family: "RegSans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Wrapper */
+.register-notes {
+  margin-top: 1.5rem;
+}
+
+/* Section title with subtle text-shadow */
+.reg-notes-title {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: var(--color-primary);
+  text-shadow: 0 1px 3px rgba(0,0,0,.15);
+}
+
+/* Grid layout with at least 2 columns */
+.reg-notes-grid {
+  column-count: 2;
+  column-gap: 16px;
+}
+
+/* Each sentence styled as a card */
+.reg-note {
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 1rem 0;
+  padding: 0.9rem 1rem;
+  background: var(--bg-color-secondary);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 14px;                    /* border-radius requirement */
+  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  color: var(--color-secondary);
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+  break-inside: avoid;                    /* don’t split notes between columns */
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+/* Hover effect for interactivity */
+.reg-note:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  background: #ffffff;
+}
+
+/* On very small screens, switch to 1 column */
+@media (max-width: 576px) {
+  .reg-notes-grid { column-count: 1; }
+}

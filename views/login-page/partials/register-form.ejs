@@ -1,19 +1,24 @@
 <div class="page-container">
-  <div class="form-container">
+  <div class="form-container reg-scope">
     <!-- REGISTER / LOGIN FORM -->
     <form id="registerForm" action="/submit" method="POST" class="details-container">
-
-      <!-- EMAIL -->
       <input type="email" id="email" name="email" required placeholder="Email" class="input-modern">
-
-      <!-- USERNAME -->
       <input type="text" id="username" name="username" required placeholder="Username" class="input-modern">
-
-      <!-- PASSWORD -->
       <input type="password" id="password" name="password" required placeholder="Password" class="input-modern">
 
-      <!-- REGISTER BUTTON -->
       <button type="submit" class="btn btn-primary-signup">REGISTER</button>
     </form>
+
+    <!-- Notes (framed, in columns) -->
+    <div class="register-notes">
+      <div class="reg-notes-title">Why join?</div>
+      <div class="reg-notes-grid">
+        <div class="reg-note">The best social network</div>
+        <div class="reg-note">Find new friends here</div>
+        <div class="reg-note">Discover exciting content</div>
+        <div class="reg-note">Stay connected anytime</div>
+      </div>
+    </div>
+
   </div>
 </div>
