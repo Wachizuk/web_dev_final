@@ -141,13 +141,65 @@ async function getMembership(groupName, userId) {
   return { followed, role, membersCount };
 }
 
+// Move a user between admin / manager / member (plainUsers)
+async function setMemberRole(groupName, userId, role) {
+  const group = await Group.findOne({ groupName }).select('members').lean(false);
+  if (!group) { const e = new Error('Group not found'); e.status = 404; throw e; }
+
+  group.members = group.members || { admins: [], managers: [], plainUsers: [] };
+  const m = group.members;
+
+  // prevent removing the last admin (similar to toggleFollow rule)
+  const wasAdmin = (m.admins || []).some(id => idEq(id, userId));
+  const adminCount = (m.admins || []).length;
+  if (wasAdmin && adminCount <= 1 && role !== 'admin') {
+    const e = new Error('Cannot demote: at least one admin is required');
+    e.status = 409; throw e;
+  }
+
+  // remove from all
+  m.admins = pull(m.admins, userId);
+  m.managers = pull(m.managers, userId);
+  m.plainUsers = pull(m.plainUsers, userId);
+
+  // add to requested role
+  if (role === 'admin')      m.admins     = push(m.admins, userId);
+  else if (role === 'manager') m.managers = push(m.managers, userId);
+  else m.plainUsers = push(m.plainUsers, userId);
+
+  group.markModified('members');
+  await group.save();
+
+  const membersCount =
+    (m.admins?.length || 0) + (m.managers?.length || 0) + (m.plainUsers?.length || 0);
+
+  return { role, membersCount };
+}
+
+
 // -------------------------------------------------------------------------------------------------------
 
 
 
 async function createGroup({ groupName, displayName, description, members }) {
   const doc = new Group({ groupName, displayName, description, members });
-  return await doc.save();
+  const saved = await doc.save();
+
+  // collect all user ids that were assigned as admins/managers
+  const ids = [
+    ...(members?.admins || []),
+    ...(members?.managers || []),
+  ];
+
+  // make sure the creator/admins/managers have this group in their user.groups
+  if (ids.length) {
+    await User.updateMany(
+      { _id: { $in: ids } },
+      { $addToSet: { groups: saved._id } }
+    );
+  }
+
+  return saved;
 }
 
 // updateOps is an object with the fields to update
@@ -164,6 +216,7 @@ module.exports = {
   toggleFollow,
   getMembers,
   getMembership,
+  setMemberRole,
 };
 
 

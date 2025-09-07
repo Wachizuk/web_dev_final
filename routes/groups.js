@@ -22,10 +22,22 @@ router.get("/:groupName", userController.isLoggedIn, groupController.groupPage);
 router.get("/:groupName/membership", userController.isLoggedIn, groupController.getMembership);
 // toggle follow/unfollow
 router.post("/:groupName/follow", userController.isLoggedIn, groupController.toggleFollow);
+// remove a member (admin only)
+router.post('/:groupName/members/:userId/remove', groupController.removeMember);
+// set member role (admin only)
+router.post('/:groupName/members/:userId/role', groupController.setMemberRole);
 
 
 
 // get group members list
 router.get("/:groupName/members", userController.isLoggedIn, groupController.getMembers);
+
+
+
+// edit group name/description
+router.patch('/:groupName', groupController.updateGroup);
+
+// delete group
+router.delete('/:groupName', groupController.deleteGroup);
 
 module.exports = router;
