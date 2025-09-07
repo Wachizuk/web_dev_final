@@ -68,12 +68,16 @@ async function runInnerScripts(scriptContainer) {
     script.parentNode.replaceChild(scriptCopy, script);
   });
 }
+//defines it only once, this is used to stop hashchange event listener from triggering renderer again
+if(typeof internalHashChange === "undefined")
+  var stateTracker = { internalHashChange: false }
 
 /**
  * renders the content window according to path and updates window.location.hash to path
  * @param {String} path
  */
-async function renderContentWindow(path) {
+async function renderContentWindow(path, outerHashChange = false) {
+  const orgPath = path;
   console.log("attempting to get path: " + path);
   if (typeof path === "string" && path[0] !== "/") {
     path = "/" + path;
@@ -99,9 +103,16 @@ async function renderContentWindow(path) {
     ? result
     : "Could not retrive the page from the server";
 
-  window.location.hash = path;
+
+    // this var is initialized in main_page
+    // prevents rerun from hashchange event listenter
+    
+    if(!outerHashChange) {
+      stateTracker.internalHashChange = true
+      window.location.hash = path;
+    }
 
   await runInnerScripts(contentWindow);
 }
 
-export { renderContentWindow, getHtmlFromPath };
+export { renderContentWindow, getHtmlFromPath, stateTracker };

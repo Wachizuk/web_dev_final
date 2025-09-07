@@ -1,6 +1,44 @@
-<h1 class="text-center feed-header">My Posts</h1>
-<ul id="post-list" class="post-list">
-
-</ul>
+<div class="container">
+  <div class="row">
+    <div class="col-10">
+      <h1 class="text-center feed-header">My Posts</h1>
+      <ul id="post-list" class="post-list"></ul>
+    </div>
+    <div class="col-2">
+      <div class="card search-panel">
+        <header class="card-header search-panel-header">
+          <h4 class="card-title search-panel-title">Search panel</h4>
+        </header>
+        <div class="card-body">
+          <form id="search-panel-form">
+            <div class="mb-3 form-floating">
+              <input
+                class="form-control"
+                type="text"
+                name="title"
+                id="title-search"
+              />
+              <label for="title-search">Title</label>
+            </div>
+            <div class="mb-3 form-floating">
+              <input class="form-control" name="content" type="text" id="content-search" />
+              <label for="content-search">Content</label>
+            </div>
+            <div class="mb-3 form-floating">
+              <input
+                class="form-control"
+                type="number"
+                name="min-likes"
+                id="min-likes-search"
+              />
+              <label for="min-likes-search">Min Likes</label>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Search</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script type="module" src="/contentWindow/my-posts.js"></script>

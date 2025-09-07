@@ -58,7 +58,16 @@ main {
   box-shadow: 0 2px 4px var(--shadow-color);
   z-index: 5;
   /* after this it starts to break, its px intentionally */
-  min-width: 630px; 
+}
+
+@media (max-width: 850px) {
+  #top-nav-mid-col {
+    display: none !important;
+  }
+
+  #top-nav-container {
+    justify-content: space-between !important;
+  }
 }
 
 #top-nav-container {
@@ -81,6 +90,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: left;
+  min-width: 150px;
 }
 
 .nav-dropdown-btn {
@@ -119,6 +129,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: right;
+  min-width: 200px;
 }
 
 #top-nav-search-form {
@@ -286,6 +297,7 @@ main {
 /* group position + width */
 #top-nav-search-group {
   position: relative;
+  min-width: 200px;
 }
 
 #top-nav-right-col #top-nav-search-group {
@@ -436,5 +448,16 @@ main {
 
   #top-nav-right-col .search-suggest .item {
     padding: 0.2rem 0.45rem;
+  }
+}
+
+.search-panel {
+  position: sticky;
+  top: 0.5rem;
+}
+
+@media (max-width: 1000px) {
+  .search-panel {
+    display: none;
   }
 }
