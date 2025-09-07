@@ -66,6 +66,16 @@ homeBtn.addEventListener('click', async () => {
   await renderContentWindow(routes.mainFeed);
 })
 
+const myFeedBtn = document.getElementById("my-feed-btn");
+myFeedBtn.addEventListener('click', async () => {
+  await renderContentWindow(routes.myFeed);
+})
+
+const myPostsBtn = document.getElementById("my-posts-btn");
+myPostsBtn.addEventListener('click', async () => {
+  await renderContentWindow(routes.myPosts);
+})
+
 window.addEventListener('DOMContentLoaded', async () => {
   await renderContentWindow(window.location.hash.substring(1))
 })

@@ -1,6 +1,8 @@
 //first is also default
 const routeDefenitions = [
   "/main-feed",
+  "/my-feed",
+  "/my-posts",
   "/groups/new",
   "/groups/:groupName",
   "/user/settings",
@@ -8,7 +10,7 @@ const routeDefenitions = [
   "/posts/create/:groupName",
   "/user/profile",
   "/posts/edit/:postId",
-  "/user/profile/:username" 
+  "/user/profile/:username",
 ];
 
 /**
@@ -93,7 +95,9 @@ async function renderContentWindow(path) {
 
   const contentWindow = document.getElementById("content-window");
   const result = await getHtmlFromPath(path);
-  contentWindow.innerHTML = result ? result : "Could not retrive the page from the server"
+  contentWindow.innerHTML = result
+    ? result
+    : "Could not retrive the page from the server";
 
   window.location.hash = path;
 

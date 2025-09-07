@@ -20,6 +20,20 @@ const handlePostErrors = async (req, res, err) => {
   }
 };
 
+const getUserFeedPosts = async (req, res) => {
+  const userId = req.session._id;
+  const limit = req.body?.limit ? req.body.limit : 50;
+
+  posts = await postService.getUserFeedPosts(userId, limit);
+  res.json(posts);
+};
+
+const getUserMyPosts = async (req, res) => {
+  const userId = req.session._id;
+  posts = await postService.getPostsByAuthor(userId);
+  res.json(posts);
+};
+
 const getAllPosts = async (req, res) => {
   let posts = null;
   posts = await postService.getAllPosts();
@@ -55,7 +69,7 @@ const getPostCardById = async (req, res) => {
   if (post) {
     await post.populate("author", "username");
     await post.populate("group", "groupName");
-    if(!post.author) post.author = {username: "DELETED_USER"}
+    if (!post.author) post.author = { username: "DELETED_USER" };
     post.likedByUser = post.likes.includes(req.session._id);
     post.numOfLikes = post.likes.length;
     post.createdAtFormatted = postService.formatPostDate(post.createdAt);
@@ -94,6 +108,14 @@ const renderMainFeed = async (req, res) => {
   res.render("main/partials/main-feed", {});
 };
 
+const renderMyFeed = async (req, res) => {
+  res.render("main/partials/my-feed", {});
+};
+
+const renderMyPosts = async (req, res) => {
+  res.render("main/partials/my-posts", {});
+};
+
 const createPost = async (req, res) => {
   const author = req.session._id;
   console.log("author of new post is:" + author);
@@ -101,7 +123,7 @@ const createPost = async (req, res) => {
   const contentBlocks = req.body.contentBlocks;
   const group = req.body.group ? req.body.group : null;
 
-  console.log("group of new post is: " + group)
+  console.log("group of new post is: " + group);
 
   try {
     const post = await postService.createPost(
@@ -228,10 +250,14 @@ module.exports = {
   getAllPosts,
   getPostFile,
   renderMainFeed,
+  renderMyFeed,
   updatePostContent,
   deletePost,
   createPost,
   getCreatePostWindow,
   getEditPostWindow,
   toggleLike,
+  getUserFeedPosts,
+  getUserMyPosts,
+  renderMyPosts
 };

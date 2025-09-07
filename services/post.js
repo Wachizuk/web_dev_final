@@ -6,7 +6,7 @@ const path = require("path");
 const PLACEHOLDER_LOCATION = path.join(
   "uploads",
   "posts",
-  "missing",
+  "000000000000000000000000",
   "placeHolder.png"
 );
 
@@ -25,8 +25,6 @@ const getPostsByAuthor = async (id) => {
   return await Post.find({ author: id });
 };
 
-const getPostsByAuthorUsername = async (authorUsername) =>
-  await Post.find({ authorUsername });
 const getPostsByText = async (text) =>
   await Post.find({ $text: { $search: text } });
 
@@ -160,7 +158,7 @@ async function getPostPermissions(postId, userId) {
 
     return ROLES.GUEST;
   } catch (err) {
-    console.error(`post with id '${postId}' does not exist`);
+    console.error(`getPostPermissions: post with id '${postId}' does not exist`);
     return ROLES.BLOCKED;
   }
 }
@@ -202,7 +200,7 @@ async function updatePost(post, userId) {
   try {
     oldPost = await getPostById(post._id);
     if (!oldPost) {
-      throw new Error(`post with id '${post._id}' does not exist`);
+      throw new Error(`updatePost: post with id '${post._id}' does not exist`);
     }
   } catch (err) {
     err.code = "NOT_FOUND";
@@ -212,7 +210,7 @@ async function updatePost(post, userId) {
   const permissions = await getPostPermissions(oldPost._id, userId);
   if (!permissions) {
     const err = new Error(
-      `user '${userId}' is blocked from post '${oldPost._id}'`
+      `updatePost: user '${userId}' is blocked from post '${oldPost._id}'`
     );
     err.code = "NOT_ALLOWED";
     throw err;
@@ -271,10 +269,26 @@ async function deletePost(postId, userId) {
   await Post.findByIdAndDelete(postId);
 }
 
+const getUserFeedPosts = async (userId, limit = 50) => {
+  const user = await userService.getUserById(userId);
+
+
+  if(!user) throw new Error("user not found in service get feed posts");
+  const groups = user.groups ? user.groups : []
+  const authors = user.friends ? user.friends : []
+  authors.push(user._id);
+
+  return await Post.find({
+    $or: [
+      {author: {$in: authors}},
+      {group: {$in: groups}}
+    ]
+  }).sort({createdAt: -1}).limit(limit)
+}
+
 module.exports = {
   createPost,
   getPostById,
-  getPostsByAuthorUsername,
   getPostsByText,
   getAllPostIds,
   getPostsByAuthor,
@@ -286,4 +300,5 @@ module.exports = {
   PERMISSIONS,
   toggleLike,
   updateContentBlockPath,
+  getUserFeedPosts,
 };
