@@ -42,10 +42,6 @@
       ></i>
       <span class="post-num-of-likes"><%= post.numOfLikes %></span>
     </button>
-    <button class="btn post-footer-btn post-comments-btn">
-      <i class="bi bi-chat-dots post-chat-icon"></i>
-      <span class="post-num-of-comments"><%= post.comments.length %></span>
-    </button>
     <% if (post.canEdit) { %>
     <button
       class="btn post-footer-btn post-edit-btn"

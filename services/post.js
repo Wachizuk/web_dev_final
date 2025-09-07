@@ -88,7 +88,6 @@ async function createPost(author, title, contentBlocks, group) {
     }),
     group: group ? group : null,
     likes: [],
-    comments: [],
   });
 
   //save returns the newly created object
