@@ -57,6 +57,17 @@ main {
   padding: 0.5rem 0.4rem;
   box-shadow: 0 2px 4px var(--shadow-color);
   z-index: 5;
+  /* after this it starts to break, its px intentionally */
+}
+
+@media (max-width: 850px) {
+  #top-nav-mid-col {
+    display: none !important;
+  }
+
+  #top-nav-container {
+    justify-content: space-between !important;
+  }
 }
 
 #top-nav-container {
@@ -79,6 +90,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: left;
+  min-width: 150px;
 }
 
 .nav-dropdown-btn {
@@ -117,6 +129,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: right;
+  min-width: 200px;
 }
 
 #top-nav-search-form {
@@ -191,6 +204,8 @@ main {
 /* content window  */
 #content-window {
   padding-top: 1rem;
+  overflow-y: auto;
+  max-height: 95vh;
 }
 
 /* posts */
@@ -199,14 +214,20 @@ main {
   list-style: none;
   align-items: center;
   justify-items: center;
-  width: 60%;
+  width: 70%;
 }
 
 .post-list-item {
   width: 100%;
   margin-bottom: 1rem;
-  min-width: 20rem;
+  min-width: 35rem;
   max-width: 100rem;
+}
+
+/* id is used in post page only */
+#post {
+  width: 90%;
+  justify-self: center;
 }
 
 .post {
@@ -227,16 +248,29 @@ main {
   align-items: center;
 }
 
+.post-header-left-side {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  text-justify: left;
+  padding: 0;
+}
+
 .post-title {
-  font-size: 2em;
+  font-size: 1.75em !important;
   overflow-wrap: break-word;
+  padding: 0 !important;
+
+  font-weight: 600;
+  border-color: var(--bg-color-secondary) !important;
 }
 
 .post-author {
   color: var(--color-secondary);
   text-decoration: none;
-  font-weight: bold;
+  font-weight: 500;
   font-size: 1.5em;
+  border-color: var(--bg-color-secondary) !important;
 }
 
 .post-group {
@@ -264,6 +298,11 @@ main {
   font-size: 1.5em;
 }
 
+/* FEED */
+.feed-header {
+  text-shadow: 12px 6px 4px var(--shadow-color);
+}
+
 /* create post form page */
 #create-post-wrap {
   justify-self: center;
@@ -277,6 +316,7 @@ main {
 /* group position + width */
 #top-nav-search-group {
   position: relative;
+  min-width: 200px;
 }
 
 #top-nav-right-col #top-nav-search-group {
@@ -427,5 +467,16 @@ main {
 
   #top-nav-right-col .search-suggest .item {
     padding: 0.2rem 0.45rem;
+  }
+}
+
+.search-panel {
+  position: sticky;
+  top: 0.5rem;
+}
+
+@media (max-width: 1000px) {
+  .search-panel {
+    display: none;
   }
 }

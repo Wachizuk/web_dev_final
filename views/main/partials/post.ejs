@@ -3,14 +3,24 @@
     <div class="container">
       <div class="row">
         <div class="col-6 post-header-left-side">
-          <h4 class="card-title post-title"><%=post.title%></h4>
+            <h4 class="card-title post-title btn"><%=post.title%></h4>
         </div>
         <div class="col-6 post-header-right-side">
           <% if (post.group) { %>
-          <button class="btn post-group" data-group-name="<%=post.group.groupName%>">in <%= post.group.groupName %></button>
+          <button
+            class="btn post-group"
+            data-group-name="<%=post.group.groupName%>"
+          >
+            in <%= post.group.groupName %>
+          </button>
           <% } %>
           <div class="post-created-date"><%=post.createdAtFormatted %></div>
-          <a class="post-author" href="#"><%= post.author.username %></a>
+          <button
+            class="post-author btn"
+            data-username="<%=post.author.username%>"
+          >
+            <%= post.author.username %>
+          </button>
         </div>
       </div>
     </div>

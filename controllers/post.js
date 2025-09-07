@@ -16,15 +16,28 @@ const handlePostErrors = async (req, res, err) => {
       return res.status(403);
     default:
       console.error(err.message);
-      res.status(500).json({ message: "internal server error" });
-      break;
+      return res.status(500).json({ message: "internal server error" });
   }
+};
+
+const getUserFeedPosts = async (req, res) => {
+  const userId = req.session._id;
+  const limit = req.body?.limit ? req.body.limit : 50;
+
+  posts = await postService.getUserFeedPosts(userId, limit);
+  return res.json(posts);
+};
+
+const getUserMyPosts = async (req, res) => {
+  const userId = req.session._id;
+  posts = await postService.getPostsByAuthor(userId);
+  return res.json(posts);
 };
 
 const getAllPosts = async (req, res) => {
   let posts = null;
   posts = await postService.getAllPosts();
-  res.json(posts);
+  return res.json(posts);
 };
 
 const getAllGroupPosts = async (req, res) => {
@@ -51,7 +64,7 @@ const getPostById = async (req, res) => {
   if (post) {
     res.json(post);
   } else {
-    res.status(404).json({ error: "Post not found" });
+    return res.status(404).json({ error: "Post not found" });
   }
 };
 
@@ -62,20 +75,20 @@ const getPostCardById = async (req, res) => {
     post = await postService.getPostById(req.params.id);
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ error: "server error ocurred" });
+    return res.status(500).json({ error: "server error ocurred" });
   }
 
   if (post) {
     await post.populate("author", "username");
     await post.populate("group", "groupName");
-    if(!post.author) post.author = {username: "DELETED_USER"}
+    if (!post.author) post.author = { username: "DELETED_USER" };
     post.likedByUser = post.likes.includes(req.session._id);
     post.numOfLikes = post.likes.length;
     post.createdAtFormatted = postService.formatPostDate(post.createdAt);
-    post.canEdit = req.session._id == post.author;
+    post.canEdit = req.session._id == post.author._id;
     res.render("../views/main/partials/post", { post });
   } else {
-    res.status(404).json({ error: "Post not found" });
+    return res.status(404).json({ error: "Post not found" });
   }
 };
 
@@ -107,6 +120,37 @@ const renderMainFeed = async (req, res) => {
   res.render("main/partials/main-feed", {});
 };
 
+const renderMyFeed = async (req, res) => {
+  res.render("main/partials/my-feed", {});
+};
+
+const renderMyPosts = async (req, res) => {
+  res.render("main/partials/my-posts", {});
+};
+
+const renderPostPage = async (req, res) => {
+  let post = null;
+  try {
+    post = await postService.getPostById(req.params.id);
+  } catch (err) {
+    console.error(err.message);
+    return res.status(404).json({ error: "Post Not Found" });
+  }
+
+  if (post) {
+    await post.populate("author", "username");
+    await post.populate("group", "groupName");
+    if (!post.author) post.author = { username: "DELETED_USER" };
+    post.likedByUser = post.likes.includes(req.session._id);
+    post.numOfLikes = post.likes.length;
+    post.createdAtFormatted = postService.formatPostDate(post.createdAt);
+    post.canEdit = req.session._id == post.author._id;
+    return res.render("main/partials/post-page", { post });
+  } else {
+    return res.status(404).json({ error: "Post not found" });
+  }
+};
+
 const createPost = async (req, res) => {
   const author = req.session._id;
   console.log("author of new post is:" + author);
@@ -114,7 +158,7 @@ const createPost = async (req, res) => {
   const contentBlocks = req.body.contentBlocks;
   const group = req.body.group ? req.body.group : null;
 
-  console.log("group of new post is: " + group)
+  console.log("group of new post is: " + group);
 
   try {
     const post = await postService.createPost(
@@ -242,10 +286,15 @@ module.exports = {
   getAllGroupPosts,
   getPostFile,
   renderMainFeed,
+  renderMyFeed,
   updatePostContent,
   deletePost,
   createPost,
   getCreatePostWindow,
   getEditPostWindow,
   toggleLike,
+  getUserFeedPosts,
+  getUserMyPosts,
+  renderMyPosts,
+  renderPostPage,
 };
