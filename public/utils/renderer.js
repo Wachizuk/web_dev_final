@@ -11,6 +11,7 @@ const routeDefenitions = [
   "/user/profile",
   "/posts/edit/:postId",
   "/user/profile/:username",
+  "/posts/page/:postId",
 ];
 
 /**
@@ -69,8 +70,8 @@ async function runInnerScripts(scriptContainer) {
   });
 }
 //defines it only once, this is used to stop hashchange event listener from triggering renderer again
-if(typeof internalHashChange === "undefined")
-  var stateTracker = { internalHashChange: false }
+if (typeof internalHashChange === "undefined")
+  var stateTracker = { internalHashChange: false };
 
 /**
  * renders the content window according to path and updates window.location.hash to path
@@ -103,14 +104,12 @@ async function renderContentWindow(path, outerHashChange = false) {
     ? result
     : "Could not retrive the page from the server";
 
-
-    // this var is initialized in main_page
-    // prevents rerun from hashchange event listenter
-    
-    if(!outerHashChange) {
-      stateTracker.internalHashChange = true
-      window.location.hash = path;
-    }
+  // this var is initialized in main_page
+  // prevents rerun from hashchange event listenter
+  if (!outerHashChange) {
+    stateTracker.internalHashChange = true;
+    window.location.hash = path;
+  }
 
   await runInnerScripts(contentWindow);
 }

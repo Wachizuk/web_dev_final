@@ -15,8 +15,7 @@ const handlePostErrors = async (req, res, err) => {
       return res.status(403);
     default:
       console.error(err.message);
-      res.status(500).json({ message: "internal server error" });
-      break;
+      return res.status(500).json({ message: "internal server error" });
   }
 };
 
@@ -25,19 +24,19 @@ const getUserFeedPosts = async (req, res) => {
   const limit = req.body?.limit ? req.body.limit : 50;
 
   posts = await postService.getUserFeedPosts(userId, limit);
-  res.json(posts);
+  return res.json(posts);
 };
 
 const getUserMyPosts = async (req, res) => {
   const userId = req.session._id;
   posts = await postService.getPostsByAuthor(userId);
-  res.json(posts);
+  return res.json(posts);
 };
 
 const getAllPosts = async (req, res) => {
   let posts = null;
   posts = await postService.getAllPosts();
-  res.json(posts);
+  return res.json(posts);
 };
 
 //returns a json of the post
@@ -52,7 +51,7 @@ const getPostById = async (req, res) => {
   if (post) {
     res.json(post);
   } else {
-    res.status(404).json({ error: "Post not found" });
+    return res.status(404).json({ error: "Post not found" });
   }
 };
 
@@ -63,7 +62,7 @@ const getPostCardById = async (req, res) => {
     post = await postService.getPostById(req.params.id);
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ error: "server error ocurred" });
+    return res.status(500).json({ error: "server error ocurred" });
   }
 
   if (post) {
@@ -76,7 +75,7 @@ const getPostCardById = async (req, res) => {
     post.canEdit = req.session._id == post.author._id;
     res.render("../views/main/partials/post", { post });
   } else {
-    res.status(404).json({ error: "Post not found" });
+    return res.status(404).json({ error: "Post not found" });
   }
 };
 
@@ -114,6 +113,29 @@ const renderMyFeed = async (req, res) => {
 
 const renderMyPosts = async (req, res) => {
   res.render("main/partials/my-posts", {});
+};
+
+const renderPostPage = async (req, res) => {
+  let post = null;
+  try {
+    post = await postService.getPostById(req.params.id);
+  } catch (err) {
+    console.error(err.message);
+    return res.status(404).json({ error: "Post Not Found" });
+  }
+
+  if (post) {
+    await post.populate("author", "username");
+    await post.populate("group", "groupName");
+    if (!post.author) post.author = { username: "DELETED_USER" };
+    post.likedByUser = post.likes.includes(req.session._id);
+    post.numOfLikes = post.likes.length;
+    post.createdAtFormatted = postService.formatPostDate(post.createdAt);
+    post.canEdit = req.session._id == post.author._id;
+    return res.render("main/partials/post-page", { post });
+  } else {
+    return res.status(404).json({ error: "Post not found" });
+  }
 };
 
 const createPost = async (req, res) => {
@@ -259,5 +281,6 @@ module.exports = {
   toggleLike,
   getUserFeedPosts,
   getUserMyPosts,
-  renderMyPosts
+  renderMyPosts,
+  renderPostPage,
 };

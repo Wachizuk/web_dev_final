@@ -21,6 +21,7 @@ const posts = {
     `uploads/posts/${postId}/${blockIndex}/${fileName}`,
   myFeed: `${base.posts}/feed`,
   myPosts: `${base.posts}/my`,
+  postPage: (postId) => `${base.posts}/page/${postId}`,
 };
 
 const users = {

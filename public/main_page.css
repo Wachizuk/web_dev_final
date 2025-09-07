@@ -214,7 +214,7 @@ main {
   list-style: none;
   align-items: center;
   justify-items: center;
-  width: 60%;
+  width: 70%;
 }
 
 .post-list-item {
@@ -222,6 +222,12 @@ main {
   margin-bottom: 1rem;
   min-width: 35rem;
   max-width: 100rem;
+}
+
+/* id is used in post page only */
+#post {
+  width: 90%;
+  justify-self: center;
 }
 
 .post {
@@ -242,16 +248,29 @@ main {
   align-items: center;
 }
 
+.post-header-left-side {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  text-justify: left;
+  padding: 0;
+}
+
 .post-title {
-  font-size: 2em;
+  font-size: 1.75em !important;
   overflow-wrap: break-word;
+  padding: 0 !important;
+
+  font-weight: 600;
+  border-color: var(--bg-color-secondary) !important;
 }
 
 .post-author {
   color: var(--color-secondary);
   text-decoration: none;
-  font-weight: bold;
+  font-weight: 500;
   font-size: 1.5em;
+  border-color: var(--bg-color-secondary) !important;
 }
 
 .post-group {

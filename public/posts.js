@@ -52,7 +52,7 @@ async function getAllPosts() {
 }
 
 /**
- * 
+ *
  * @returns array of post objects
  */
 async function getMyFeedPosts() {
@@ -72,7 +72,7 @@ async function getMyFeedPosts() {
 }
 
 /**
- * 
+ *
  * @returns array of post objects
  */
 async function getMyPosts() {
@@ -168,37 +168,7 @@ async function getPostCard(postId) {
 
     //add event listeners where needed
     // edit btn redirect if exists
-    postCard
-      .querySelector(".post-edit-btn")
-      ?.addEventListener("click", () =>
-        renderContentWindow(routes.posts.edit(postId))
-      );
-    const likeBtn = postCard.querySelector(".post-like-btn");
-    likeBtn.addEventListener("click", async () => {
-      const heartIcon = likeBtn.querySelector("i");
-      const newNumOfLikes = await postToggleLike(postId);
-      heartIcon.classList.toggle("bi-heart-fill");
-      heartIcon.classList.toggle("bi-heart");
-      likeBtn.querySelector(".post-num-of-likes").textContent = newNumOfLikes;
-    });
-
-    postCard.querySelectorAll(".post-group")?.forEach((elem) => {
-      elem.addEventListener("click", async (e) => {
-        const btn = e.target.closest("button");
-        const groupName = btn.dataset.groupName;
-        await renderContentWindow(routes.groups.groupName(groupName));
-        window.scroll({ top: 0, behavior: "smooth" });
-      });
-    });
-
-    postCard.querySelectorAll(".post-author")?.forEach((elem) => {
-      elem.addEventListener("click", async (e) => {
-        const btn = e.target.closest("button");
-        const username = btn.dataset.username;
-        await renderContentWindow(routes.users.profile + "/" + username);
-        window.scroll({ top: 0, behavior: "smooth" });
-      });
-    });
+    addPostCardEventListeners(postCard)
 
     return postCard;
   } catch (err) {
@@ -207,6 +177,45 @@ async function getPostCard(postId) {
     );
   }
 }
+
+const addPostCardEventListeners = (postCard) => {
+  postCard
+    .querySelector(".post-edit-btn")
+    ?.addEventListener("click", () =>
+      renderContentWindow(routes.posts.edit(postId))
+    );
+  const likeBtn = postCard.querySelector(".post-like-btn");
+  likeBtn.addEventListener("click", async () => {
+    const heartIcon = likeBtn.querySelector("i");
+    const newNumOfLikes = await postToggleLike(postCard.dataset.postId);
+    heartIcon.classList.toggle("bi-heart-fill");
+    heartIcon.classList.toggle("bi-heart");
+    likeBtn.querySelector(".post-num-of-likes").textContent = newNumOfLikes;
+  });
+
+  const postTitle = postCard.querySelector(".post-title");
+  postTitle.addEventListener('click', () => {
+    renderContentWindow(routes.posts.postPage(postCard.dataset.postId))
+  })
+
+  postCard.querySelectorAll(".post-group")?.forEach((elem) => {
+    elem.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button");
+      const groupName = btn.dataset.groupName;
+      await renderContentWindow(routes.groups.groupName(groupName));
+      window.scroll({ top: 0, behavior: "smooth" });
+    });
+  });
+
+  postCard.querySelectorAll(".post-author")?.forEach((elem) => {
+    elem.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button");
+      const username = btn.dataset.username;
+      await renderContentWindow(routes.users.profile + "/" + username);
+      window.scroll({ top: 0, behavior: "smooth" });
+    });
+  });
+};
 
 //POST DATA CHANGERS
 
@@ -411,5 +420,6 @@ export {
   uploadPostFile,
   renderPosts,
   getMyFeedPosts,
-  getMyPosts
+  getMyPosts,
+  addPostCardEventListeners
 };

@@ -23,7 +23,8 @@ router.patch('/toggleLike/:id', userController.isLoggedIn, postController.toggle
 // router.patch('/removeGroup/:id', userController.isLoggedIn, postController.removeGroup);
 router.get('/feed', userController.isLoggedIn, postController.getUserFeedPosts)
 router.get('/my', userController.isLoggedIn, postController.getUserMyPosts)
-
+router.route("/page/:id")
+.get(userController.isLoggedIn, postController.renderPostPage)
 
 router.route("/:id")
 .get(userController.isLoggedIn, postController.getPostById)

@@ -54,7 +54,7 @@ function matchAndSetPostVisibility(post, params = {}) {
 
   if (params.title) {
     let title = post.querySelector(".post-title").textContent;
-    if (!title.includes(params.title)) {
+    if (!title.toLowerCase().includes(params.title)) {
       hidePost(post);
       match = false;
       return match;
@@ -77,7 +77,7 @@ function matchAndSetPostVisibility(post, params = {}) {
   if (params.content) {
     const postTexts = [...post.querySelectorAll(".post-text")];
     const matchFound = postTexts.some((block) => {
-      return block.textContent.includes(params.content);
+      return block.textContent.toLowerCase().includes(params.content);
     });
 
     if (!matchFound) {
