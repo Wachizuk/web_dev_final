@@ -3,83 +3,197 @@ import { renderAllPosts } from "../posts.js";
 console.log("group feed loaded");
 renderAllPosts()
 
-window.GroupMembers = (function () {
-  function renderList(listId, users) {
-    var list = document.getElementById(listId);
-    if (!list) return;
-    list.innerHTML = '';
+//------------------------------ Members card --------------------------------
 
-    (users || []).forEach(function (u) {
-      var li = document.createElement('li');
-      li.className = 'list-group-item d-flex justify-content-between align-items-center';
+function initMembersCard() {
+  var card = document.getElementById("group-members-card");
+  if (!card) return;
 
-      // left: username
-      var nameSpan = document.createElement('span');
-      nameSpan.textContent = u.username || 'user';
+  var groupName = card.getAttribute("data-group");
+  if (!groupName) return;
 
-      // right: friend button
-      var btn = document.createElement('button');
-      btn.className = 'btn btn-outline-primary btn-sm';
-      btn.type = 'button';
-      btn.textContent = 'Add Friend';   // later can toggle to 'Remove Friend'
-      btn.setAttribute('data-user-id', u._id || '');
+  fetch("/groups/" + groupName + "/members") // uses services/groups.getMembers
+    .then(function (res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    })
+    .then(function (data) {
+      if (!data) return;
 
-      li.appendChild(nameSpan);
-      li.appendChild(btn);
-      list.appendChild(li);
+      // update counts
+      var total = (data.counts && data.counts.total) || 0;
+      var c1 = document.getElementById("members-count");
+      if (c1) c1.textContent = String(total);
+      var c2 = document.getElementById("members-count-btn");
+      if (c2) c2.textContent = String(total);
+
+      // 1) Always show lists to everyone (no admin controls yet)
+        fillList("members-admins",   data.admins,   false, 'admin');
+        fillList("members-managers", data.managers, false, 'manager');
+        fillList("members-plain",    data.plainUsers, false, 'member');
+
+      // 2) Then (optionally) check my role; if I'm admin, re-render with admin buttons
+      fetch("/groups/" + groupName + "/membership")
+        .then(function (r) {
+          return r.ok ? r.json() : null;
+        })
+        .then(function (m) {
+          if (m && m.role === "admin") {
+            fillList("members-admins", data.admins, true, 'admin');
+            fillList("members-managers", data.managers, true, 'manager');
+            fillList("members-plain", data.plainUsers, true, 'member');
+          }
+        });
+    })
+    .catch(function (e) {
+      console.error("members card:", e && e.message ? e.message : e);
     });
-  }
+}
 
-  function open(groupName) {
-    var url = '/groups/' + groupName + '/members';
+function fillList(id, arr, isAdmin, currentRole) {
+  var list = document.getElementById(id);
+  if (!list) return;
+  var html = (arr || [])
+    .map(function (u) {
+      var uid = u && (u._id || u.id) ? u._id || u.id : "";
+      var name = (u && u.username) || "user";
+      return '' +
+  '<li class="members-item">' +
 
-    fetch(url, { headers: { 'Content-Type': 'application/json' } })
-      .then(function (res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      })
-      .then(function (data) {
-        if (!data || !data.ok) return;
+    // Row 1: name (left) + Add Friend (right)
+    '<div class="members-top">' +
+      '<span class="members-name">' + name + '</span>' +
+      '<button type="button" class="btn btn-sm btn-link members-action" ' +
+              'data-action="friend-toggle" data-user="' + String(uid) + '">Add Friend</button>' +
+    '</div>' +
 
-        renderList('members-admins', data.admins);
-        renderList('members-managers', data.managers);
-        renderList('members-plain', data.plainUsers);
+    // Row 2: admin-only role controls (labels depend on currentRole)
+    (isAdmin ? (function(){
+      if (currentRole === 'admin') {
+        return '' +
+          '<div class="members-admin">' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
+                    'data-action="remove-admin" data-user="' + String(uid) + '">Remove admin</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
+                    'data-action="make-manager" data-user="' + String(uid) + '">Make manager</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-danger" ' +
+                    'data-action="remove-member" data-user="' + String(uid) + '">Remove</button>' +
+          '</div>';
+      }
+      if (currentRole === 'manager') {
+        return '' +
+          '<div class="members-admin">' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
+                    'data-action="make-admin" data-user="' + String(uid) + '">Make admin</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
+                    'data-action="remove-manager" data-user="' + String(uid) + '">Remove manager</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-danger" ' +
+                    'data-action="remove-member" data-user="' + String(uid) + '">Remove</button>' +
+          '</div>';
+      }
+      // member/plain
+      return '' +
+        '<div class="members-admin">' +
+          '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
+                  'data-action="make-admin" data-user="' + String(uid) + '">Make admin</button>' +
+          '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
+                  'data-action="make-manager" data-user="' + String(uid) + '">Make manager</button>' +
+          '<button type="button" class="btn btn-sm btn-outline-danger" ' +
+                  'data-action="remove-member" data-user="' + String(uid) + '">Remove</button>' +
+        '</div>';
+    })() : '') +
 
-        var totalEl = document.getElementById('members-total');
-        if (totalEl) {
-          var total = (data.counts && data.counts.total) ? data.counts.total : 0;
-          totalEl.textContent = 'Total: ' + total;
-        }
-
-        var modalEl = document.getElementById('groupMembersModal');
-        if (modalEl && window.bootstrap && bootstrap.Modal) {
-          var modal = new bootstrap.Modal(modalEl);
-          modal.show();
-        }
-      })
-      .catch(function (e) {
-        console.error('members popup failed:', e.message);
-      });
-  }
-
-  return { open: open };
-})();
-
-//------------------------------ Members POPUP window ------------------------------
+  '</li>';
+    })
+    .join("");
+    list.innerHTML = html;
+}
 
 function initMembersButton() {
   var btn = document.getElementById('group-members-btn');
-  if (!btn || !window.GroupMembers) return;
+  if (!btn) return;
 
-  var groupName = btn.getAttribute('data-group');
-  if (!groupName) return;
-
-  btn.addEventListener('click', function () {
-    window.GroupMembers.open(groupName);
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    var anchor = document.getElementById('members-card-anchor') || document.getElementById('group-members-card');
+    if (anchor && anchor.scrollIntoView) {
+      anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   });
 }
 
-//document.addEventListener('DOMContentLoaded', initMembersButton);
+
+
+//------------------------------ Members admin actions ----------------------------
+function initMembersAdminActions() {
+  var membersCard = document.getElementById('group-members-card');
+  if (!membersCard) return;
+
+  // Event delegation: listen for clicks on any button with [data-action] inside the card
+  membersCard.addEventListener('click', function (evt) {
+    var actionBtn = evt.target.closest('[data-action]');
+    if (!actionBtn || !membersCard.contains(actionBtn)) return;
+
+    var action = actionBtn.getAttribute('data-action'); // 'remove-member' | 'make-admin' | 'make-manager' | 'remove-admin' | 'remove-manager'
+    if (!action) return;
+
+    // Only handle the admin controls; ignore other buttons like friend-toggle
+    var isRoleAction = (action === 'make-admin' || action === 'make-manager' || action === 'remove-admin' || action === 'remove-manager');
+    var isRemoveMember = (action === 'remove-member');
+    if (!isRoleAction && !isRemoveMember) return;
+
+    var targetUserId = actionBtn.getAttribute('data-user');
+    var groupName    = membersCard.getAttribute('data-group');
+    if (!targetUserId || !groupName) return;
+
+    // Prevent double submits
+    if (actionBtn.disabled) return;
+    actionBtn.disabled = true;
+
+    // Build request
+    var url, fetchOptions = { method: 'POST' };
+
+    if (isRemoveMember) {
+      url = '/groups/' + groupName + '/members/' + targetUserId + '/remove';
+    } else {
+        // role change
+      var targetRole =
+        action === 'make-admin'     ? 'admin'   :
+        action === 'make-manager'   ? 'manager' :
+        'member';
+
+      url = '/groups/' + groupName + '/members/' + targetUserId + '/role';
+      fetchOptions.headers = { 'Content-Type': 'application/json' };
+      fetchOptions.body    = JSON.stringify({ role: targetRole });
+    }
+
+    // Send and refresh
+    fetch(url, fetchOptions)
+      .then(function (res) {
+        return res.json().catch(function(){ return {}; }).then(function (j) {
+          if (!res.ok) throw new Error(j && j.message || ('HTTP ' + res.status));
+          return j;
+        });
+      })
+      .then(function () {
+        // lists + counts based on fresh server state
+        initMembersCard();
+      })
+      .catch(function (err) {
+        alert(err && err.message ? err.message : 'Request failed');
+      })
+      .finally(function () {
+        actionBtn.disabled = false;
+      });
+  });
+}
+
+
+// expose to renderer
+window.groupFeed = window.groupFeed || {};
+window.groupFeed.initMembersCard = initMembersCard;
+window.groupFeed.initMembersButton = initMembersButton;
+
 
 
 //----------------------------------------------------------------------------------
@@ -97,8 +211,11 @@ function initFollowButton() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     })
-      .then(function (res) {
-        if (!res.ok) return res.json().then(function (j){ throw new Error(j && j.message || ('HTTP ' + res.status)); });
+      .then(async function (res) {
+        if (!res.ok) {
+          const j = await res.json();
+          throw new Error(j && j.message || ('HTTP ' + res.status));
+        }
         return res.json();
       })
       .then(function (data) {
@@ -114,6 +231,8 @@ function initFollowButton() {
         // update Members button count
         var membersBtn = document.getElementById('group-members-btn');
         if (membersBtn) membersBtn.textContent = 'Members (' + (data.membersCount || 0) + ')';
+
+        initMembersCard();
       })
       .catch(function (e) { alert(e.message); });
   });
@@ -122,3 +241,5 @@ function initFollowButton() {
 
 initFollowButton();
 initMembersButton();
+initMembersCard();
+initMembersAdminActions();

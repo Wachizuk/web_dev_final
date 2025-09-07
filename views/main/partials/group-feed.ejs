@@ -62,12 +62,10 @@
 <!------------------------------ main content area ------------------------------>
 
  <!-- 2 MAIN CONTENT COLS part -->
-<div id="group-columns"> 
+<div id="group-columns">
   <!-- LEFT COL: posts using main_page.js -->
   <div class="left-col">
-    <ul id="post-list"
-        class="post-list"
-        data-group="<%= group.groupName %>">
+    <ul id="post-list" class="post-list" data-group="<%= group.groupName %>">
     </ul>
   </div>
 
@@ -77,7 +75,7 @@
     <div id="group-about" class="card post">
       <div class="card-header d-flex align-items-center justify-content-between">
         <h3 class="post-title mb-0">About this Group:</h3>
-        <div class="post-header-right-side"><!-- intentionally empty: no date/user --></div>
+        <div class="post-header-right-side"></div>
       </div>
   
       <div class="card-body post-block">
@@ -86,47 +84,32 @@
         </p>
       </div>
     </div>
+  
+    <!-- === Members === -->
+     <div id="members-card-anchor"></div>
+    <div id="group-members-card" class="card post" data-group="<%= group.groupName %>">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h3 class="post-title mb-0">
+          Group Members
+          <span class="text-muted">(<span id="members-count">
+              <%= membersCount %>
+            </span>)</span>
+        </h3>
+      </div>
+  
+      <div class="card-body post-block">
+        <h4 class="text-muted mb-2">Admins</h4>
+        <ul class="members-list mb-3" id="members-admins"></ul>
+  
+        <h4 class="text-muted mb-2">Managers</h4>
+        <ul class="members-list mb-3" id="members-managers"></ul>
+  
+        <h4 class="text-muted mb-2">Members</h4>
+        <ul class="members-list" id="members-plain"></ul>
+      </div>
+    </div>
   </div>
 </div>
 <script type="module" src="/contentWindow/group-feed.js"></script>
 
 <!------------------------------ END OF main content area ------------------------------>
-
-
-<!------------------------------ Members POPUP window ------------------------------>
-
-<!-- Members Modal -->
-<div class="modal fade" id="groupMembersModal" tabindex="-1" aria-labelledby="groupMembersModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="groupMembersModalLabel">Group Members</h5>
-        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-      <div class="modal-body">
-        <section class="mb-3">
-          <h6 class="mb-2">Admins</h6>
-          <ul class="list-group" id="members-admins"></ul>
-        </section>
-
-        <section class="mb-3">
-          <h6 class="mb-2">Managers</h6>
-          <ul class="list-group" id="members-managers"></ul>
-        </section>
-
-        <section>
-          <h6 class="mb-2">Members</h6>
-          <ul class="list-group" id="members-plain"></ul>
-        </section>
-      </div>
-
-      <div class="modal-footer">
-        <span class="text-muted small" id="members-total"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!------------------------------ END OF Members POPUP window ------------------------------>

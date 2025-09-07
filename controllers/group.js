@@ -99,6 +99,17 @@ async function groupPage(req, res) {
 
 // --------------------------------------- Follow related function ---------------------------------
 
+// remove a member (admin only)
+async function removeMember(req, res) {
+  try {
+    const { groupName, userId } = req.params;
+    const result = await groupService.toggleFollow(groupName, userId);
+    return res.json({ ok: true, removed: true, membersCount: result.membersCount });
+  } catch (err) {
+    return res.status(err.status || 500).json({ ok: false, message: err.message || 'Server error' });
+  }
+}
+
 // GET membership info for the logged-in user
 async function getMembership(req, res) {
   try {
@@ -141,6 +152,22 @@ async function getMembers(req, res) {
   }
 }
 
+// Move a user between admin / manager / member (plainUsers)
+async function setMemberRole(req, res) {
+  try {
+    const { groupName, userId } = req.params;
+    const role = (req.body && req.body.role) || ''; // 'admin' | 'manager' | 'member'
+    if (!['admin', 'manager', 'member'].includes(role)) {
+      return res.status(400).json({ ok: false, message: 'Invalid role' });
+    }
+
+    const result = await groupService.setMemberRole(groupName, userId, role);
+    return res.json({ ok: true, role: result.role, membersCount: result.membersCount });
+  } catch (err) {
+    return res.status(err.status || 500).json({ ok: false, message: err.message || 'Server error' });
+  }
+}
+
 // --------------------------------------------------------------------------------------------------------
 
-module.exports = { groupPage, createGroupPage, createGroup, getMembership, toggleFollow, getMembers };
+module.exports = { groupPage, createGroupPage, createGroup, getMembership, toggleFollow, getMembers, removeMember, setMemberRole };
