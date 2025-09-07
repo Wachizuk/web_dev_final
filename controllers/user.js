@@ -1,6 +1,7 @@
 const { url } = require("inspector");
 const userService = require("../services/user");
 const groupService = require("../services/group");
+const statsService = require("../services/stats");
 // Import the 'path' module to work with file and directory paths
 const path = require("path");
 
@@ -64,6 +65,12 @@ async function profilePage(req, res) {
     const userId = req.session?._id;
     if (!userId) return res.status(401).render("errors/401");
 
+      const [perDay, byGroup] = await Promise.all([
+      statsService.postsPerDayByUser(userId, 30),
+      statsService.postsByGroupForUser(userId, { limit: 8 })
+    ]);
+    console.log(perDay);
+    console.log(byGroup);
     const userIdStr = String(userId);
     const [email, username, friends, avatarUrl, address] = await Promise.all([
       userService.getEmail(userIdStr),
@@ -73,7 +80,7 @@ async function profilePage(req, res) {
       userService.getAddress(userIdStr),
     ]);
 
-    return res.render(viewProfile, { userId: userIdStr, email, username, friends, avatarUrl, address });
+    return res.render(viewProfile, { userId: userIdStr, email, username, friends, avatarUrl, address ,statsSeed: { perDay, byGroup }});
   } catch (err) {
     console.error("profilePage error:", err);
     return res.status(500).render("errors/500", { message: "Server error" });
