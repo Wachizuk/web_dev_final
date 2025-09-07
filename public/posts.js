@@ -51,6 +51,46 @@ async function getAllPosts() {
   }
 }
 
+/**
+ *
+ * @returns array of post objects
+ */
+async function getMyFeedPosts() {
+  try {
+    const res = await fetch(routes.posts.myFeed);
+
+    if (!res.ok) {
+      throw new Error("failed post fetch");
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error(
+      `failed getting post card for ${postId}, reason: ${err.message}`
+    );
+  }
+}
+
+/**
+ *
+ * @returns array of post objects
+ */
+async function getMyPosts() {
+  try {
+    const res = await fetch(routes.posts.myPosts);
+
+    if (!res.ok) {
+      throw new Error("failed post fetch");
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error(
+      `failed getting post card for ${postId}, reason: ${err.message}`
+    );
+  }
+}
+
 /** gets posts with filtering options
  * @param {Object} filters -object with filters
  * @param {String[] | String} filters.groupIds - filter by group
@@ -128,28 +168,7 @@ async function getPostCard(postId) {
 
     //add event listeners where needed
     // edit btn redirect if exists
-    postCard
-      .querySelector(".post-edit-btn")
-      ?.addEventListener("click", () =>
-        renderContentWindow(routes.posts.edit(postId))
-      );
-    const likeBtn = postCard.querySelector(".post-like-btn");
-    likeBtn.addEventListener("click", async () => {
-      const heartIcon = likeBtn.querySelector("i");
-      const newNumOfLikes = await postToggleLike(postId);
-      heartIcon.classList.toggle("bi-heart-fill");
-      heartIcon.classList.toggle("bi-heart");
-      likeBtn.querySelector(".post-num-of-likes").textContent = newNumOfLikes;
-    });
-
-    postCard.querySelectorAll(".post-group")?.forEach((elem) => {
-      elem.addEventListener('click', async (e) => {
-        const btn = e.target.closest('button');
-        const groupName = btn.dataset.groupName;
-        await renderContentWindow(routes.groups.groupName(groupName));
-        window.scroll({top: 0, behavior: "smooth"})
-      })
-    })
+    addPostCardEventListeners(postCard)
 
     return postCard;
   } catch (err) {
@@ -158,6 +177,45 @@ async function getPostCard(postId) {
     );
   }
 }
+
+const addPostCardEventListeners = (postCard) => {
+  postCard
+    .querySelector(".post-edit-btn")
+    ?.addEventListener("click", () =>
+      renderContentWindow(routes.posts.edit(postId))
+    );
+  const likeBtn = postCard.querySelector(".post-like-btn");
+  likeBtn.addEventListener("click", async () => {
+    const heartIcon = likeBtn.querySelector("i");
+    const newNumOfLikes = await postToggleLike(postCard.dataset.postId);
+    heartIcon.classList.toggle("bi-heart-fill");
+    heartIcon.classList.toggle("bi-heart");
+    likeBtn.querySelector(".post-num-of-likes").textContent = newNumOfLikes;
+  });
+
+  const postTitle = postCard.querySelector(".post-title");
+  postTitle.addEventListener('click', () => {
+    renderContentWindow(routes.posts.postPage(postCard.dataset.postId))
+  })
+
+  postCard.querySelectorAll(".post-group")?.forEach((elem) => {
+    elem.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button");
+      const groupName = btn.dataset.groupName;
+      await renderContentWindow(routes.groups.groupName(groupName));
+      window.scroll({ top: 0, behavior: "smooth" });
+    });
+  });
+
+  postCard.querySelectorAll(".post-author")?.forEach((elem) => {
+    elem.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button");
+      const username = btn.dataset.username;
+      await renderContentWindow(routes.users.profile + "/" + username);
+      window.scroll({ top: 0, behavior: "smooth" });
+    });
+  });
+};
 
 //POST DATA CHANGERS
 
@@ -254,18 +312,20 @@ async function deletePost(postId) {
   }
 }
 
-
 async function uploadPostFile(file, postId, blockIndex) {
   try {
     // send raw file to server
     const buf = await file.arrayBuffer();
-    
+
     // put block index in filename place intentionally
-    const res = await fetch(routes.posts.uploadFile(postId, blockIndex, blockIndex), {
-      method: "POST",
-      headers: { "Content-Type": file.type },
-      body: buf,
-    });
+    const res = await fetch(
+      routes.posts.uploadFile(postId, blockIndex, blockIndex),
+      {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: buf,
+      }
+    );
 
     const data = await res.json();
     if (res.ok) {
@@ -323,17 +383,10 @@ async function renderAllPosts() {
   });
 }
 
-/** renders posts with filtering options
- * @param {Object} filters -object with filters
- * @param {String[]} filters.groupIds- filter by group
- * @param {String[]} filters.authorIds - filter by author
- * @param {String} filters.searchText - filter by title and content text
- * @param {String} filters.numOfLikes - minimum likes
- * @returns
+/** renders posts from post Ids
+ * @param {Post[] | String[]} posts
  */
-async function renderPosts(filters) {
-  posts = await getPosts(filters);
-
+async function renderPosts(posts) {
   if (!Array.isArray(posts)) {
     postList.innerHTML =
       "<li class='post-list-item'> Error: could not load posts</li>";
@@ -345,9 +398,15 @@ async function renderPosts(filters) {
     return;
   }
 
-  posts.forEach((post) => {
-    getAndAddPostCard(post._id);
-  });
+  //doing one by one to keep order
+  for (let index = 0; index < posts.length; index++) {
+    const post = posts[index];
+    if (typeof post == "string") {
+      await getAndAddPostCard(post);
+    } else {
+      await getAndAddPostCard(post._id);
+    }
+  }
 }
 
 export {
@@ -358,5 +417,9 @@ export {
   createPost,
   updatePost,
   deletePost,
-  uploadPostFile
+  uploadPostFile,
+  renderPosts,
+  getMyFeedPosts,
+  getMyPosts,
+  addPostCardEventListeners
 };

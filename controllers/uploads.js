@@ -57,7 +57,7 @@ const getPostFile = async (req, res) => {
 
   if (!postPermissions.includes(postService.PERMISSIONS.VIEW)) {
     console.error(
-      `User '${userId}' does not have permission to edit post ${postId}`
+      `User '${userId}' does not have permission to view post '${postId}'`
     );
     return res.status(403).json({ message: "Missing VIEW Permissions for Post" });
   }
@@ -93,9 +93,9 @@ const uploadPostFile = async (req, res) => {
 
   if (!postPermissions.includes(postService.PERMISSIONS.EDIT)) {
     console.error(
-      `User '${userId}' does not have permission to edit post ${postId}`
+      `User '${userId}' does not have permission to edit post '${postId}'`
     );
-    return res.status(403).json({ message: "Edit Permission Missing" });
+    return res.status(403).json({ message: "View Permission Missing" });
   }
 
   const contentType = req.get("content-type");

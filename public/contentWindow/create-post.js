@@ -197,11 +197,7 @@ document
     for (let index = 0; index < mediaContentBlocks.length; index++) {
       const block = mediaContentBlocks[index];
 
-      const fileInput = document
-        .querySelector(`#create-post-content-block-${index}`)
-        .querySelector("input");
-
-      const file = fileInput.files[0];
+      const file = block.file;
       if (!file) {
         console.log("failed file upload for block " + index);
         return;

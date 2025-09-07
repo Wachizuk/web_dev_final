@@ -1,6 +1,6 @@
 
 // Import functions from other modules
-import { renderContentWindow } from "./utils/renderer.js";
+import { renderContentWindow, stateTracker } from "./utils/renderer.js";
 import { routes } from "./utils/routes.js";
 
 const logoutBtn = document.getElementById("leaveBtn");
@@ -66,8 +66,29 @@ homeBtn.addEventListener('click', async () => {
   await renderContentWindow(routes.mainFeed);
 })
 
+const myFeedBtn = document.getElementById("my-feed-btn");
+myFeedBtn.addEventListener('click', async () => {
+  await renderContentWindow(routes.myFeed);
+})
+
+const myPostsBtn = document.getElementById("my-posts-btn");
+myPostsBtn.addEventListener('click', async () => {
+  await renderContentWindow(routes.myPosts);
+})
+
 window.addEventListener('DOMContentLoaded', async () => {
   await renderContentWindow(window.location.hash.substring(1))
+})
+
+
+
+window.addEventListener('hashchange', async () => {
+  if(stateTracker.internalHashChange) {
+    stateTracker.internalHashChange = false;
+    return;
+  }
+
+  await renderContentWindow(window.location.hash.substring(1), true)
 })
 
 ///////////////SEARCH BAR////////////////////////

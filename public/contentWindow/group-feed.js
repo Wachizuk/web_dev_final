@@ -311,6 +311,7 @@ function initFollowButton() {
         if (membersBtn) membersBtn.textContent = 'Members (' + (data.membersCount || 0) + ')';
 
         initMembersCard();
+        window.location.reload();
       })
       .catch(function (e) { alert(e.message); });
   });
