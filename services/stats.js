@@ -19,7 +19,7 @@ async function postsByGroupForUser(userId, { limit = 8 } = {}) {
     { $limit: limit }, // take top groups
 
     { $lookup: { from: "groups", localField: "_id", foreignField: "_id", as: "g" } }, // join with groups collection
-    { $unwind: "$g" }, // flatten array
+    { $unwind: "$g" }, 
 
     { $project: {
         _id: 0, // drop internal id

@@ -7,7 +7,6 @@ if(process.env.API_KEY && process.env.API_SECRET && process.env.ACCESS_TOKEN && 
 } else {
   console.log("twitter keys missing")
 }
-
 const client = new TwitterApi({
   appKey: process.env.API_KEY,
   appSecret: process.env.API_SECRET,
@@ -15,11 +14,8 @@ const client = new TwitterApi({
   accessSecret: process.env.ACCESS_SECRET,
 });
 
-const bearer = new TwitterApi(process.env.BEARER_TOKEN);
 
 const twitterClient = client.readWrite;
-const twitterBearer = bearer.readOnly;
-
 const tweet = async (input) => {
   
   try {
@@ -31,8 +27,6 @@ const tweet = async (input) => {
   } catch (e) {
      console.error(e);
   }
-
-
 }
 
 

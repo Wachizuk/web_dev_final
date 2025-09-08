@@ -4,33 +4,24 @@ const {
   findMissingUsernames,
   findUserIdsByUsernames,
 } = require("../services/user");
-// const groupFeedRoute = "main/partials/group-feed";
 const postModel = require("../models/post");
 const groupModel = require("../models/group");
 const userModel = require("../models/user");
 const services = require("../services/group");
 
-
 const createGroupRoute = "main/partials/create-group";
 const allGroupsRoute = "main/partials/all-groups";
-
-
 
 // GET /groups/new - render the create form
 async function createGroupPage(req, res) {
   res.render(createGroupRoute, {});
 }
 
-// GET /groups/allGroups - render the create form
-// async function allGroupsPage(req, res) {
-//   res.render(allGroupsRoute, {});
-// }
-
 async function allGroupsPage(req, res) {
   try {
     const rows = await groupService.getAllGroups();
 
-    const groups = rows.map(g => {
+    const groups = rows.map((g) => {
       const m = g.members || {};
       const membersCount =
         (m.admins?.length || 0) +
@@ -38,18 +29,23 @@ async function allGroupsPage(req, res) {
         (m.plainUsers?.length || 0);
 
       return {
-        groupName:   g.groupName,
+        groupName: g.groupName,
         displayName: g.displayName,
         description: g.description || "",
-        coverUrl:    g.coverFile ? `/uploads/groups/${g.coverFile}` : "/images/team-placeholder.png",
-        membersCount
+        coverUrl: g.coverFile
+          ? `/uploads/groups/${g.coverFile}`
+          : "/images/team-placeholder.png",
+        membersCount,
       };
     });
 
     return res.render(allGroupsRoute, { groups });
   } catch (err) {
     console.error("allGroupsPage error:", err);
-    return res.render(allGroupsRoute, { groups: [], error: "Failed to load groups" });
+    return res.render(allGroupsRoute, {
+      groups: [],
+      error: "Failed to load groups",
+    });
   }
 }
 
@@ -339,7 +335,6 @@ async function deleteGroup(req, res) {
       { groups: group._id },
       { $pull: { groups: group._id } }
     );
-
 
     // delete the group document
     await groupModel.deleteOne({ _id: group._id });

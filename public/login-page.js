@@ -1,5 +1,6 @@
 
 const registerBtn = document.getElementById("registerBtn");
+
 // Define the URLS
 const urlLogin  = "/user/login";
 const urlRegister = "/user/register";
@@ -14,6 +15,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   // Get the userIdentifier and password values from the input fields
   const userIdentifier = document.getElementById("userIdentifier").value;
   const password = document.getElementById("password").value;
+
   const errorToast = new bootstrap.Toast(document.getElementById("errorToast"));
   const successToast = new bootstrap.Toast(document.getElementById("successToast"));
 
@@ -41,7 +43,6 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       errorToast.show();
     }
   } catch (err) {
-    // If there was a network or fetch error, log it to the console
     console.error(err);
   }
 });
@@ -69,7 +70,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
     // Sun moving slowly
     const time = Date.now() / 1000;
-    const sunX = (Math.sin(time * 0.3) * 0.4 + 0.5) * w; // oscillates left-right
+    const sunX = (Math.sin(time * 0.3) * 0.4 + 0.5) * w; // moving left-right
     const sunY = 40 + Math.sin(time * 0.2) * 10; // small up-down
     ctx.beginPath();
     ctx.arc(sunX, sunY, 20, 0, Math.PI * 2);

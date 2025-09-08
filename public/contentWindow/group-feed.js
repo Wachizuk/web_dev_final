@@ -4,7 +4,6 @@ import { renderContentWindow } from "../utils/renderer.js";
 import { routes } from "../utils/routes.js";
 
 console.log("group feed loaded");
-//renderAllPosts()
 renderGroupPosts();
 
 async function renderGroupPosts() {
@@ -29,15 +28,6 @@ async function renderGroupPosts() {
     li.appendChild(card);
     list.appendChild(li);
   }
-}
-
-function scrollWithin(container, target, pad = 0) {
-  const cRect = container.getBoundingClientRect();
-  const tRect = target.getBoundingClientRect();
-  container.scrollTo({
-    top: container.scrollTop + (tRect.top - cRect.top) - pad,
-    behavior: "smooth",
-  });
 }
 
 //------------------------------ Members card --------------------------------
@@ -234,7 +224,6 @@ function initMembersAdminActions() {
     var action = actionBtn.getAttribute("data-action"); // 'remove-member' | 'make-admin' | 'make-manager' | 'remove-admin' | 'remove-manager'
     if (!action) return;
 
-
     if (action == "friend-toggle") {
       try {
         friendBtnAction(actionBtn);
@@ -347,7 +336,7 @@ function initFollowButton() {
           membersBtn.textContent = "Members (" + (data.membersCount || 0) + ")";
 
         initMembersCard();
-        //window.location.reload();
+        window.location.reload();
       })
       .catch(function (e) {
         alert(e.message);
@@ -377,7 +366,6 @@ function initGroupSettingsCard() {
   }
 
   const groupName = card.dataset.group || "";
-  //   const form = card.querySelector("#edit-group-form");
   const delBtn = card.querySelector("#delete-group-btn");
 
   // Cover picker (same as create-group)
@@ -429,8 +417,7 @@ function initGroupSettingsCard() {
     const desc = (fd.get("description") || "").trim();
 
     const body = { displayName: nextName, description: desc };
-    if(body.displayName.length  > 20)
-    {
+    if (body.displayName.length > 20) {
       alert("Display name is too long [20 MAX]");
       return;
     }

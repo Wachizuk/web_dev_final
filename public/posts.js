@@ -397,10 +397,6 @@ async function renderAllPosts() {
     return;
   }
 
-  // posts.forEach((post) => {
-  //   getAndAddPostCard(post._id);
-  // });
-
   //doing one by one to keep order
   for (let index = 0; index < posts.length; index++) {
     const post = posts[index];

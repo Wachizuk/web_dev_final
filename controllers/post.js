@@ -1,6 +1,4 @@
 const postService = require("../services/post");
-const groupService = require("../services/group");
-const fs = require("fs");
 const path = require("path");
 const userService = require("../services/user");
 const Post = require("../models/post");
@@ -88,7 +86,7 @@ const getPostCardById = async (req, res) => {
     post.numOfLikes = post.likes.length;
     post.createdAtFormatted = postService.formatPostDate(post.createdAt);
     post.canEdit = req.session._id == post.author._id;
-    
+
     post.canManageGroup = false;
     if (post.group && post.group.members) {
       const uid = String(req.session._id || "");
@@ -193,24 +191,19 @@ const createPost = async (req, res) => {
       contentBlocks,
       group
     );
-    console.log("post to twitter var value: " + postToTwitter)
+    console.log("post to twitter var value: " + postToTwitter);
 
     if (postToTwitter) {
       try {
-        console.log("trying to post")
+        console.log("trying to post");
         let textToPost = title + "\n\n";
-        contentBlocks.forEach(block => {
-            if(block.type == "text") {
-              textToPost += block.value + "\n"
-            }
+        contentBlocks.forEach((block) => {
+          if (block.type == "text") {
+            textToPost += block.value + "\n";
+          }
         });
 
-        console.log("final post text: \n" + textToPost)
-        // const textParts = contentBlocks
-        //   .filter(b => b.type === "text" && b.value)
-        //   .map(b => b.value.trim());
-
-        // const tweetText = [title, ...textParts].join(" ").slice(0, 280);
+        console.log("final post text: \n" + textToPost);
 
         await twitterService.tweet(textToPost);
       } catch (e) {
@@ -274,7 +267,6 @@ async function removeGroup(req, res) {
     return res.status(500).json({ message: "Server error" });
   }
 }
-
 
 const deletePost = async (req, res) => {
   const userId = req.session._id;

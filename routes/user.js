@@ -3,7 +3,6 @@ const router = express.Router();
 const userController = require('../controllers/user');
 
 // ---------------- LOGIN ROUTE ----------------
-// This route handles POST requests to "/login"
 router.route("/login")
 .post(userController.login)
 .get(userController.loginPage);

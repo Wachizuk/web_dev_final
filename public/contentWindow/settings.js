@@ -9,7 +9,7 @@ const emailForm = document.getElementById("updateEmailForm");
 const passwordForm = document.getElementById("updatePasswordForm");
 const deleteForm = document.getElementById("deleteAccountForm");
 
-// Exit early if forms are not found in DOM
+// Exit early if forms are not found 
 if (!usernameForm) console.error("usernameForm missing");
 if (!emailForm) console.error("emailForm missing");
 if (!passwordForm) console.error("passwordForm missing");
@@ -148,7 +148,7 @@ if (deleteForm) {
         ? "mt-3 text-success"
         : "mt-3 text-danger";
 
-      // On success, redirect (e.g., to logout)
+    
       if (data.success) {
         window.location.href = "/";
       }

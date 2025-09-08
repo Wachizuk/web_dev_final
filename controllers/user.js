@@ -1,14 +1,8 @@
-const { url } = require("inspector");
 const userService = require("../services/user");
-const groupService = require("../services/group");
 const statsService = require("../services/stats");
-// Import the 'path' module to work with file and directory paths
-const path = require("path");
 
 // Redirect URLs (routes)
 const urlLogin = "/user/login";
-const urlMainPage = "/";
-const urlRegister = "/register";
 
 // View names (EJS templates inside views folder)
 const viewMainPage = "main/base";
@@ -19,7 +13,6 @@ const viewProfile = "main/partials/profile";
 const viewSelectedProfile = "main/partials/selected-profile";
 
 // Middleware to check if a user is logged in based on session._id
-// If logged in → continue, otherwise redirect to login page
 function isLoggedIn(req, res, next) {
   if (req.session._id != null) return next();
   else res.redirect(urlLogin);
@@ -59,7 +52,7 @@ async function registerPage(req, res) {
   res.render(viewRegister);
 }
 
-//Render profile page
+// Render profile page
 async function profilePage(req, res) {
   try {
     const userId = req.session?._id;
@@ -95,7 +88,7 @@ async function profilePage(req, res) {
   }
 }
 
-//Render other page
+// Render other page
 async function selectedProfilePage(req, res) {
   try {
     const selectedUsername = req.params.username;
@@ -201,12 +194,11 @@ async function settingsPage(req, res) {
   res.render(viewSettings, { userId, email, username });
 }
 
-// Controller: update username
+// update username
 async function updateUsername(req, res) {
   try {
     const userId = req.session._id;
 
-    // Call service layer to change username
     const result = await userService.changeUsername(userId, req.body.username);
 
     // Handle failure (bad format, duplicate, not found, etc.)
@@ -254,7 +246,7 @@ async function updateEmail(req, res) {
   }
 }
 
-// Controller: update password
+// update password
 async function updatePassword(req, res) {
   try {
     const userId = req.session._id;
@@ -278,17 +270,14 @@ async function updatePassword(req, res) {
   }
 }
 
-// Contreoller: delete Account
+// delete Account
 
 async function removeAccount(req, res) {
   try {
-    // Identify the current user from session
     const userId = req.session._id;
 
-    // Read password from request body
     const passowrd = req.body.password;
 
-    // Delegate to service
     const result = await userService.deleteAccount(userId, passowrd);
 
     // Handle service outcome
@@ -390,7 +379,7 @@ const login = async (req, res) => {
   // Try to log in using userService
   const userId = await userService.login(userIdentifier, password);
 
-  // If login fails, return a generic error (no detailed reason for security)
+  // If login fails, return a generic error 
   if (!userId) {
     return res.json({ message: "login failed", success: false });
   }
@@ -405,7 +394,7 @@ const login = async (req, res) => {
     req.session.email = userEmail;
     req.session.username = userUsername;
 
-    // Respond with success JSON (redirect handled on client side)
+    // Respond with success JSON 
     return res.json({ message: "Login successful", success: true });
   } catch (err) {
     // Catch any server/db errors during login
@@ -438,7 +427,6 @@ const isFriend = async (req, res) => {
   }
 };
 
-// Export controller functions to be used in routes
 module.exports = {
   login,
   logout,

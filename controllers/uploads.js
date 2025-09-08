@@ -1,9 +1,7 @@
 const uploadsService = require("../services/uploads");
-
 const postService = require("../services/post");
 const path = require("path");
-const groupService = require("../services/group")
-
+const groupService = require("../services/group");
 
 /**
  * Handle POST /uploads/avatar/:userId
@@ -35,7 +33,7 @@ const uploadAvatar = async (req, res) => {
 const getAvatar = async (req, res) => {
   try {
     const filename = req.params.filename;
-    const filePath = await uploadsService.getAvatarPathByFilename(filename); // /uploads/avatar/alice.png
+    const filePath = await uploadsService.getAvatarPathByFilename(filename); //  example :    /uploads/avatar/alice.png
 
     res.sendFile(filePath); // sending the picture
   } catch (err) {
@@ -44,29 +42,33 @@ const getAvatar = async (req, res) => {
   }
 };
 
-
 const getPostFile = async (req, res) => {
   try {
     const filename = req.params.filename;
     const postId = req.params.postId;
     const userId = req.session._id;
 
-    
-  //permission check
-  const postPermissions = await postService.getPostPermissions(postId, userId);
-
-  if (!postPermissions.includes(postService.PERMISSIONS.VIEW)) {
-    console.error(
-      `User '${userId}' does not have permission to view post '${postId}'`
+    //permission check
+    const postPermissions = await postService.getPostPermissions(
+      postId,
+      userId
     );
-    return res.status(403).json({ message: "Missing VIEW Permissions for Post" });
-  }
+
+    if (!postPermissions.includes(postService.PERMISSIONS.VIEW)) {
+      console.error(
+        `User '${userId}' does not have permission to view post '${postId}'`
+      );
+      return res
+        .status(403)
+        .json({ message: "Missing VIEW Permissions for Post" });
+    }
 
     let filePath = path.join(uploadsService.POSTS_DIR, postId, filename); // /uploads/avatar/alice.png
 
     // removes all ../ ./ stuff to create the actual path
     filePath = path.resolve(filePath);
-    if(!filePath.startsWith(uploadsService.POSTS_DIR)) throw new Error("Forbidden path for post file: " + filePath)
+    if (!filePath.startsWith(uploadsService.POSTS_DIR))
+      throw new Error("Forbidden path for post file: " + filePath);
     res.sendFile(filePath); // sending the picture
   } catch (err) {
     console.error(err.message);
@@ -116,24 +118,31 @@ const uploadPostFile = async (req, res) => {
   }
 };
 
-
 // -----------------------------------group cover image upload-----------------------------------
 
 // Handle POST /uploads/groups/:groupName/cover
 // Saves a new cover image for the given group and updates the group document.
 const saveGroupCover = async (req, res) => {
   try {
-    const groupName   = req.params.groupName;
+    const groupName = req.params.groupName;
     const contentType = req.get("content-type");
-    const buffer      = req.body;
+    const buffer = req.body;
 
     // Expected to return: { filename, url }
-    const { filename, url } = await uploadsService.saveGroupCoverImage(groupName,buffer,contentType);
+    const { filename, url } = await uploadsService.saveGroupCoverImage(
+      groupName,
+      buffer,
+      contentType
+    );
 
     // Record the filename on the group document
-    await groupService.updateGroupByName(groupName, { $set: { coverFile: filename } });
+    await groupService.updateGroupByName(groupName, {
+      $set: { coverFile: filename },
+    });
 
-    return res.status(201).json({ url, message: "Group cover uploaded successfully" });
+    return res
+      .status(201)
+      .json({ url, message: "Group cover uploaded successfully" });
   } catch (err) {
     console.error(err.message);
     return res.status(500).json({ error: "Upload failed" });
@@ -142,7 +151,10 @@ const saveGroupCover = async (req, res) => {
 
 // -----------------------------------end of group cover image upload-----------------------------------
 
-
-module.exports = { uploadAvatar, getAvatar, saveGroupCover , uploadPostFile, getPostFile };
-
-
+module.exports = {
+  uploadAvatar,
+  getAvatar,
+  saveGroupCover,
+  uploadPostFile,
+  getPostFile,
+};

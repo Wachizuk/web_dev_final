@@ -1,4 +1,4 @@
-// Add an event listener to the login form for the "submit" event
+
 document
   .getElementById("registerForm")
   .addEventListener("submit", async (e) => {
@@ -25,7 +25,7 @@ document
         body: JSON.stringify({ username, email, password }), // Send userIdentifier & password as JSON
       });
 
-      // Convert the server's response from JSON to a JavaScript object
+   
       const data = await res.json();
       console.log(data); // For debugging in the browser console
 
@@ -37,6 +37,7 @@ document
           window.location.href = "/";
         }, 2000);
       } else {
+        
         // If Register failed, show a failure alert
         errorToastMessage.innerText = data.message;
         errorToast.show();

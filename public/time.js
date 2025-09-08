@@ -1,4 +1,3 @@
-// public/time.js
 (() => {
   const el = document.getElementById("nav-time");
   if (!el) return;

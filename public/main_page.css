@@ -57,7 +57,6 @@ main {
   padding: 0.5rem 0.4rem;
   box-shadow: 0 2px 4px var(--shadow-color);
   z-index: 5;
-  /* after this it starts to break, its px intentionally */
 }
 
 @media (max-width: 850px) {
@@ -119,12 +118,10 @@ main {
 
 .nav-btn {
   margin: 0 1em 0 0;
-  /* fix comma typo */
   background-color: var(--bg-color-teritary);
   color: var(--color-teritary);
 }
 
-/* nav right area */
 #top-nav-right-col {
   display: flex;
   align-items: center;
