@@ -1,11 +1,13 @@
 <div class="container all-groups-page">
-  <h1 class="page-title mb-4">All Groups</h1>
+  <div class="row">
+    <div class="col-10">
+      <h1 class="page-title mb-4">All Groups</h1>
 
-  <% if (!Array.isArray(groups) || groups.length === 0) { %>
-    <p class="text-muted">No groups available.</p>
-  <% } else { %>
-    <ul id="all-groups-container" class="group-cards list-unstyled m-0 p-0">
-      <% groups.forEach(g => { %>
+      <% if (!Array.isArray(groups) || groups.length === 0) { %>
+      <p class="text-muted">No groups available.</p>
+      <% } else { %>
+      <ul id="all-groups-container" class="group-cards list-unstyled m-0 p-0">
+        <% groups.forEach(g => { %>
         <li class="group-card card" data-group="<%= g.groupName %>">
           <img
             src="<%= g.coverUrl %>"
@@ -16,13 +18,13 @@
             <h5 class="card-title mb-1"><%= g.displayName %></h5>
 
             <% if (g.description) { %>
-              <p class="card-text text-muted"><%= g.description %></p>
+            <p class="card-text text-muted group-description"><%= g.description %></p>
             <% } %>
 
-            
-            
             <div class="group-card__meta">
-              <small class="text-muted">Members: <%= g.membersCount || 0 %></small>
+              <small class="text-muted group-members-count" data-members-count="<%=g.membersCount%>"
+                >Members: <%= g.membersCount || 0 %></small
+              >
               <button
                 type="button"
                 class="btn btn-sm btn-primary"
@@ -34,9 +36,50 @@
             </div>
           </div>
         </li>
-      <% }) %>
-    </ul>
-  <% } %>
+        <% }) %>
+      </ul>
+      <% } %>
+    </div>
+    <div class="col-2">
+      <div class="card search-panel">
+        <header class="card-header search-panel-header">
+          <h4 class="card-title search-panel-title">Search panel</h4>
+        </header>
+        <div class="card-body">
+          <form id="search-panel-form">
+            <div class="mb-3 form-floating">
+              <input
+                class="form-control"
+                type="text"
+                name="title"
+                id="group-name-search"
+              />
+              <label for="group-name-search">Group Name</label>
+            </div>
+            <div class="mb-3 form-floating">
+              <input
+                class="form-control"
+                name="description"
+                type="text"
+                id="description-search"
+              />
+              <label for="description-search">Group description</label>
+            </div>
+            <div class="mb-3 form-floating">
+              <input
+                class="form-control"
+                type="number"
+                name="min-members"
+                id="min-members-search"
+              />
+              <label for="min-members-search">Min members</label>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Search</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script type="module" src="/contentWindow/all-groups.js"></script>

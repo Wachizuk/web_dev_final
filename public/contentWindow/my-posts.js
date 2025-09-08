@@ -21,6 +21,14 @@ searchForm?.addEventListener("submit", (e) => {
   });
 });
 
+searchForm?.addEventListener("change", (e) => {
+  e.preventDefault();
+  const params = extractSearchData();
+  document.querySelectorAll(".post")?.forEach((post) => {
+    matchAndSetPostVisibility(post, params);
+  });
+});
+
 const extractSearchData = () => {
   let title = document.querySelector("#title-search").value;
   let content = document.querySelector("#content-search").value;
