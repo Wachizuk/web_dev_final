@@ -94,8 +94,6 @@ function fillList(id, arr, isAdmin, currentRole) {
         name +
         "</span>" +
         (function () {
-          console.log("filling");
-          console.log(friends);
           var isFriend = friends.includes(uid); // use whatever flag your API returns
           var state = isFriend ? "friend" : "not-friend";
           var label = isFriend ? "Remove Friend" : "Add Friend";
@@ -219,7 +217,6 @@ function initMembersAdminActions() {
     var action = actionBtn.getAttribute("data-action"); // 'remove-member' | 'make-admin' | 'make-manager' | 'remove-admin' | 'remove-manager'
     if (!action) return;
 
-    console.log(action);
 
     if (action == "friend-toggle") {
       try {
@@ -447,9 +444,7 @@ async function initAll() {
   initFollowButton();
   initMembersButton();
   friends = await getFriends();
-  console.log(typeof friends);
   friends = friends ? friends.map((fr) => fr._id) : [];
-  console.log(friends);
   initMembersCard();
   initMembersAdminActions();
   initGroupSettingsCard();
@@ -458,7 +453,6 @@ async function initAll() {
 initAll();
 
 async function friendBtnAction(btn) {
-  console.log(btn);
   const friendUid = btn.dataset.user;
   const method = btn.classList.contains("btn-primary") ? "POST" : "DELETE";
 
