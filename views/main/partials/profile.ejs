@@ -1,19 +1,22 @@
 <div class="container my-5">
-  <!-- Profile Header -->
+  <!-- Profile Header card -->
   <div class="card mb-4">
     <div class="card-body d-flex align-items-center gap-3">
+      <!-- User avatar (with fallback if none set) -->
       <img id="profile-avatar" src="<%= avatarUrl || '/uploads/avatars/placeholder.png' %>" alt="<%= username %>"
         class="rounded-circle" width="80" height="80">
 
       <div>
+        <!-- Username -->
         <h4 class="mb-0">
           <%= username %>
         </h4>
+        <!-- Email under username -->
         <p class="text-muted mb-0">
           <%= email %>
         </p>
 
-        <!-- Change avatar button + hidden file input -->
+        <!-- Button to change avatar + hidden file input -->
         <button id="change-avatar-btn" class="btn btn-sm btn-primary mt-2">Change Avatar</button>
         <input type="file" id="avatar-input" accept="image/png, image/jpeg, image/webp" style="display:none">
       </div>
@@ -25,70 +28,84 @@
     <div class="card-header d-flex align-items-center gap-2">
       <i class="bi bi-people-fill"></i>
       <span>Friends</span>
+      <!-- Badge showing friend count -->
       <span class="badge text-bg-secondary ms-auto">
         <%= friends.length %>
       </span>
     </div>
+
+    <!-- Friends list -->
     <ul class="list-group list-group-flush">
       <% if (friends && friends.length) { %>
         <% friends.forEach(friend=> { %>
           <li class="list-group-item d-flex align-items-center gap-3">
+            <!-- Friend avatar (with fallback) -->
             <img src="<%= friend.avatarUrl || '/uploads/avatars/placeholder.png' %>" alt="<%= friend.username %>"
               class="rounded-circle" width="40" height="40">
+            <!-- Friend username -->
             <%= friend.username %>
           </li>
-          <% }) %>
-            <% } else { %>
-              <li class="list-group-item text-muted">No friends yet</li>
-              <% } %>
+        <% }) %>
+      <% } else { %>
+        <!-- Empty state if no friends -->
+        <li class="list-group-item text-muted">No friends yet</li>
+      <% } %>
     </ul>
   </div>
 
-  <!-- Address Card -->
+  <!-- Address Section -->
   <div class="card mt-3">
     <div class="card-header d-flex align-items-center gap-2">
       <i class="bi bi-geo-alt-fill"></i>
       <span>Address</span>
+      <!-- Show current address if set -->
       <% if (address) { %>
         <small id="address-current" class="text-muted ms-auto">
           <%= address %>
         </small>
-        <% } %>
+      <% } %>
     </div>
 
     <div class="card-body">
       <% if (address) { %>
+        <!-- Google Maps embed for the address -->
         <div class="ratio ratio-16x9 mb-3">
           <iframe id="address-map" src="https://www.google.com/maps?q=<%= encodeURIComponent(address) %>&output=embed"
             loading="lazy" allowfullscreen style="border:0;" referrerpolicy="no-referrer-when-downgrade">
           </iframe>
         </div>
-        <% } else { %>
-          <p class="text-muted mb-3">No address set</p>
-          <% } %>
+      <% } else { %>
+        <!-- Fallback if no address -->
+        <p class="text-muted mb-3">No address set</p>
+      <% } %>
 
-            <!-- Change address form -->
-            <form id="address-form" class="d-flex gap-2">
-              <input type="text" name="address" class="form-control" placeholder="Enter new address"
-                value="<%= address || '' %>">
-              <button type="submit" class="btn btn-sm btn-primary">Save</button>
-            </form>
+      <!-- Form to change/save address -->
+      <form id="address-form" class="d-flex gap-2">
+        <input type="text" name="address" class="form-control" placeholder="Enter new address"
+          value="<%= address || '' %>">
+        <button type="submit" class="btn btn-sm btn-primary">Save</button>
+      </form>
     </div>
   </div>
 
-
-  <!-- cards for stats -->
+  <!-- Activity Section -->
   <div class="card mt-4">
+    <!-- Section header -->
     <div class="card-header d-flex align-items-center gap-2">
       <i class="bi bi-graph-up"></i>
       <span>Activity</span>
     </div>
+
+    <!-- Two charts: posts per day and posts by group -->
     <div class="card-body">
       <div class="row g-4">
+        <!-- Left column: posts per day chart -->
         <div class="col-12 col-lg-6">
           <h6 class="mb-2">Posts per day (30d)</h6>
           <svg id="chart-per-day" width="100%" height="240"></svg>
         </div>
+
+        <!-- Right column: posts by group chart -->
         <div class="col-12 col-lg-6">
           <h6 class="mb-2">Posts by group</h6>
           <svg id="chart-by-group" width="100%" height="240"></svg>
@@ -97,8 +114,9 @@
     </div>
   </div>
 
+  <!-- Hidden JSON seed for client-side chart rendering -->
   <div id="stats-data" data-json='<%- JSON.stringify(statsSeed || { perDay:[], byGroup:[] }) %>'></div>
 
+  <!-- Profile page JS logic -->
+  <script type="module" src="/contentWindow/profile.js"></script>
 </div>
-
-<script type="module" src="/contentWindow/profile.js"></script>
