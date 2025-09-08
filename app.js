@@ -1,10 +1,12 @@
 require('custom-env').env('', './config');
 const express = require('express');
+const twitter = require('twitter-api-v2');
 const connectDB = require('./config/db');
 const cors = require('cors');
 const session = require('express-session');
 const path = require('path');
 const app = express();
+
 
 // ---------------- CHECK ENV VARIABLES ----------------
 // Check if the MongoDB connection string exists in the environment variables
@@ -22,6 +24,9 @@ if (!process.env.PORT) {
 // ---------------- MIDDLEWARE ----------------
 // Middleware for cors security
 app.use(cors());
+
+// app.use(twitter());
+
 // Middle ware for handling user sessions session.
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -60,6 +65,8 @@ app.use("/suggest", suggestRoute);
 // your existing router for POST/GET avatar remains fine
 const uploadsRoute = require('./routes/uploads');
 app.use('/uploads', uploadsRoute);
+
+
 
 // serve the raw files under /uploads 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

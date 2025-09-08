@@ -3,32 +3,35 @@
   <form id="create-post-form" data-group-name="<%=groupName%>">
     <div class="mb-4">
       <label for="input-post-title" class="form-label">Post Title</label>
-      <input
-        type="text"
-        name="title"
-        class="form-control form-control-lg"
-        id="input-post-title"
-      />
+      <input type="text" name="title" class="form-control form-control-lg" id="input-post-title" />
     </div>
 
     <div class="mb-4">
       <label for="input-post-group" class="form-label">Post Group</label>
       <select class="form-select" name="" id="group-select">
         <% if (groupName) { %>
-        <option value="">none</option>
-        <% } else { %>
-        <option value="" selected>none</option>
-        <% } for( let index = 0; index < groups.length; index++ ) { if
-        (groupName == groups[index].groupName) { %>
-        <option value="<%= groups[index]._id %>" selected>
-          <%=groups[index].groupName%>
-        </option>
-        <% } else { %>
-        <option value="<%= groups[index]._id %>">
-          <%=groups[index].groupName%>
-        </option>
-        <% }} %>
+          <option value="">none</option>
+          <% } else { %>
+            <option value="" selected>none</option>
+            <% } for( let index=0; index < groups.length; index++ ) { if (groupName==groups[index].groupName) { %>
+              <option value="<%= groups[index]._id %>" selected>
+                <%=groups[index].groupName%>
+              </option>
+              <% } else { %>
+                <option value="<%= groups[index]._id %>">
+                  <%=groups[index].groupName%>
+                </option>
+                <% }} %>
       </select>
+    </div>
+
+    <div class="mb-4">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="" id="checkChecked" >
+        <label class="form-check-label" for="checkChecked">
+          Post to Twitter
+        </label>
+      </div>
     </div>
 
     <label for="content-input-list" class="form-label">Post Content</label>

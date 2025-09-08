@@ -247,11 +247,11 @@ const addPostCardEventListeners = (postCard) => {
  * @param {String} group - group id
  * @returns {Promise<Post>}
  */
-async function createPost(title, contentBlocks, groupId = null) {
+async function createPost(title, contentBlocks, groupId = null, postToTwitter) {
   const res = await fetch(routes.posts.create, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title, contentBlocks, group: groupId }),
+    body: JSON.stringify({ title, contentBlocks, group: groupId, postToTwitter }),
   });
 
   if (!res.ok) {
