@@ -162,8 +162,7 @@ document
   .getElementById("create-post-form")
   .addEventListener("submit", async (e) => {
     e.preventDefault();
-    const { title, contentBlocks, mediaContentBlocks, group } =
-      extractFormData();
+    const { title, contentBlocks, mediaContentBlocks, group, postToTwitter } = extractFormData();
 
     if (!title) {
       alert("title missing");
@@ -185,7 +184,7 @@ document
       return;
     }
 
-    const post = await createPost(title, contentBlocks, group);
+    const post = await createPost(title, contentBlocks, group , postToTwitter);
 
     if (!post) {
       alert("failed creating post");
@@ -226,6 +225,8 @@ function extractFormData() {
   const group = document.getElementById("group-select").value;
   const contentBlocks = [];
   const mediaContentBlocks = [];
+  const postToTwitter = document.getElementById("checkChecked").checked;
+  console.log("post to twitter value: " + postToTwitter)
 
   document
     .querySelectorAll(".create-post-content-block")
@@ -246,5 +247,5 @@ function extractFormData() {
       }
     });
 
-  return { title, contentBlocks, mediaContentBlocks, group };
+  return { title, contentBlocks, mediaContentBlocks, group, postToTwitter };
 }

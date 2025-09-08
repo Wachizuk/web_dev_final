@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const userService = require("../services/user");
 const Post = require("../models/post");
+const twitterService = require("../services/twitter");
 
 const handlePostErrors = async (req, res, err) => {
   switch (err.code) {
@@ -43,7 +44,9 @@ const getAllGroupPosts = async (req, res) => {
   try {
     const gid = req.params.groupId || req.query.groupId;
     if (!gid) return res.json([]); // no id then empty list
-    const posts = await Post.find({ group: gid }).sort({ createdAt: -1 }).lean();
+    const posts = await Post.find({ group: gid })
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(posts);
   } catch (err) {
     console.error("getAllGroupPosts failed:", err);
@@ -180,9 +183,9 @@ const createPost = async (req, res) => {
   const title = req.body.title;
   const contentBlocks = req.body.contentBlocks;
   const group = req.body.group ? req.body.group : null;
+  const postToTwitter = req.body.postToTwitter ? true : false;
 
   console.log("group of new post is: " + group);
-
   try {
     const post = await postService.createPost(
       author,
@@ -190,6 +193,31 @@ const createPost = async (req, res) => {
       contentBlocks,
       group
     );
+    console.log("post to twitter var value: " + postToTwitter)
+
+    if (postToTwitter) {
+      try {
+        console.log("trying to post")
+        let textToPost = title + "\n\n";
+        contentBlocks.forEach(block => {
+            if(block.type == "text") {
+              textToPost += block.value + "\n"
+            }
+        });
+
+        console.log("final post text: \n" + textToPost)
+        // const textParts = contentBlocks
+        //   .filter(b => b.type === "text" && b.value)
+        //   .map(b => b.value.trim());
+
+        // const tweetText = [title, ...textParts].join(" ").slice(0, 280);
+
+        await twitterService.tweet(textToPost);
+      } catch (e) {
+        console.error("tweet failed:", e.message || e);
+      }
+    }
+
     res.status(200).json(post);
   } catch (err) {
     switch (err.code) {

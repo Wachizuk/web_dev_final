@@ -247,7 +247,9 @@ const addPostCardEventListeners = (postCard) => {
  * @param {String} group - group id
  * @returns {Promise<Post>}
  */
+
 async function createPost(title, contentBlocks, groupId = null, postToTwitter = false) {
+
   const res = await fetch(routes.posts.create, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
