@@ -15,7 +15,7 @@ const getAllPostIds = async (id) => {
   return await Post.find({}, { _id: 1 });
 };
 
-const getAllPosts = async () => await Post.find();
+const getAllPosts = async () => await Post.find().sort({createdAt: -1});
 
 const getPostById = async (id) => {
   return await Post.findById(id);
@@ -269,7 +269,7 @@ async function deletePost(postId, userId) {
   await Post.findByIdAndDelete(postId);
 }
 
-const getUserFeedPosts = async (userId, limit = 50) => {
+const getUserFeedPosts = async (userId) => {
   const user = await userService.getUserById(userId);
 
 
@@ -283,7 +283,7 @@ const getUserFeedPosts = async (userId, limit = 50) => {
       {author: {$in: authors}},
       {group: {$in: groups}}
     ]
-  }).sort({createdAt: -1}).limit(limit)
+  }).sort({createdAt: -1})
 }
 
 module.exports = {

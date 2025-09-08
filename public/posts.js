@@ -247,11 +247,11 @@ const addPostCardEventListeners = (postCard) => {
  * @param {String} group - group id
  * @returns {Promise<Post>}
  */
-async function createPost(title, contentBlocks, groupId = null) {
+async function createPost(title, contentBlocks, groupId = null, postToTwitter = false) {
   const res = await fetch(routes.posts.create, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title, contentBlocks, group: groupId }),
+    body: JSON.stringify({ title, contentBlocks, group: groupId, postToTwitter }),
   });
 
   if (!res.ok) {
@@ -381,6 +381,7 @@ async function getAndAddPostCard(postId) {
  * renders all posts user has access to
  */
 async function renderAllPosts() {
+  //we get it already by order from the server
   const posts = await getAllPosts();
 
   if (!Array.isArray(posts)) {
@@ -394,9 +395,19 @@ async function renderAllPosts() {
     return;
   }
 
-  posts.forEach((post) => {
-    getAndAddPostCard(post._id);
-  });
+  // posts.forEach((post) => {
+  //   getAndAddPostCard(post._id);
+  // });
+
+  //doing one by one to keep order
+  for (let index = 0; index < posts.length; index++) {
+    const post = posts[index];
+    if (typeof post == "string") {
+      await getAndAddPostCard(post);
+    } else {
+      await getAndAddPostCard(post._id);
+    }
+  }
 }
 
 /** renders posts from post Ids

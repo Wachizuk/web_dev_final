@@ -22,9 +22,8 @@ const handlePostErrors = async (req, res, err) => {
 
 const getUserFeedPosts = async (req, res) => {
   const userId = req.session._id;
-  const limit = req.body?.limit ? req.body.limit : 50;
 
-  posts = await postService.getUserFeedPosts(userId, limit);
+  posts = await postService.getUserFeedPosts(userId);
   return res.json(posts);
 };
 

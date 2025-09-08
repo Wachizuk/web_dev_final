@@ -13,14 +13,26 @@ searchForm?.addEventListener("submit", (e) => {
   });
 });
 
+searchForm?.addEventListener("change", (e) => {
+  e.preventDefault();
+  const params = extractSearchData();
+  document.querySelectorAll(".post")?.forEach((post) => {
+    matchAndSetPostVisibility(post, params);
+  });
+});
+
 const extractSearchData = () => {
   let title = document.querySelector("#title-search").value;
+  let author = document.querySelector("#author-search").value;
+  let group = document.querySelector("#group-search").value;
   let content = document.querySelector("#content-search").value;
   let minLikes = document.querySelector("#min-likes-search").value;
-    title = title ? title.toLowerCase() : "";
-    content = content ? content.toLowerCase() : "";
+  title = title ? title.toLowerCase() : "";
+  author = author ? author.toLowerCase() : "";
+  group = group ? group.toLowerCase() : "";
+  content = content ? content.toLowerCase() : "";
 
-  return { title, content, minLikes };
+  return { title, author, group, content, minLikes };
 };
 
 const showPost = (post) => {
@@ -47,6 +59,25 @@ function matchAndSetPostVisibility(post, params = {}) {
   if (params.title) {
     let title = post.querySelector(".post-title").textContent;
     if (!title.toLowerCase().includes(params.title)) {
+      hidePost(post);
+      match = false;
+      return match;
+    }
+  }
+
+  if (params.author) {
+    let author = post.querySelector(".post-author").textContent;
+    if (!author.toLowerCase().includes(params.author)) {
+      hidePost(post);
+      match = false;
+      return match;
+    }
+  }
+
+  if (params.group) {
+    let group = post.querySelector(".post-group");
+    // remove the 'in ' from 'in groupName' with substring(3);
+    if (!group || !group.textContent.substring(3).toLowerCase().includes(params.group)) {
       hidePost(post);
       match = false;
       return match;
