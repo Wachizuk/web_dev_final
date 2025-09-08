@@ -182,7 +182,7 @@ const addPostCardEventListeners = (postCard) => {
   postCard
     .querySelector(".post-edit-btn")
     ?.addEventListener("click", () =>
-      renderContentWindow(routes.posts.edit(postId))
+      renderContentWindow(routes.posts.edit(postCard.dataset.postId))
     );
   const likeBtn = postCard.querySelector(".post-like-btn");
   likeBtn.addEventListener("click", async () => {

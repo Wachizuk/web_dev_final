@@ -228,6 +228,7 @@ main {
 #post {
   width: 90%;
   justify-self: center;
+  max-width: 1300px;
 }
 
 .post {
