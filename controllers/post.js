@@ -80,12 +80,24 @@ const getPostCardById = async (req, res) => {
 
   if (post) {
     await post.populate("author", "username");
-    await post.populate("group", "groupName");
+    await post.populate("group", "groupName members");
     if (!post.author) post.author = { username: "DELETED_USER" };
     post.likedByUser = post.likes.includes(req.session._id);
     post.numOfLikes = post.likes.length;
     post.createdAtFormatted = postService.formatPostDate(post.createdAt);
     post.canEdit = req.session._id == post.author._id;
+    
+    post.canManageGroup = false;
+    if (post.group && post.group.members) {
+      const uid = String(req.session._id || "");
+      const m = post.group.members;
+      const isAdmin =
+        Array.isArray(m.admins) && m.admins.some((id) => String(id) === uid);
+      const isManager =
+        Array.isArray(m.managers) &&
+        m.managers.some((id) => String(id) === uid);
+      post.canManageGroup = isAdmin || isManager;
+    }
     res.render("../views/main/partials/post", { post });
   } else {
     return res.status(404).json({ error: "Post not found" });
@@ -139,12 +151,24 @@ const renderPostPage = async (req, res) => {
 
   if (post) {
     await post.populate("author", "username");
-    await post.populate("group", "groupName");
+    await post.populate("group", "groupName members");
     if (!post.author) post.author = { username: "DELETED_USER" };
     post.likedByUser = post.likes.includes(req.session._id);
     post.numOfLikes = post.likes.length;
     post.createdAtFormatted = postService.formatPostDate(post.createdAt);
     post.canEdit = req.session._id == post.author._id;
+
+    post.canManageGroup = false;
+    if (post.group && post.group.members) {
+      const uid = String(req.session._id || "");
+      const m = post.group.members;
+      const isAdmin =
+        Array.isArray(m.admins) && m.admins.some((id) => String(id) === uid);
+      const isManager =
+        Array.isArray(m.managers) &&
+        m.managers.some((id) => String(id) === uid);
+      post.canManageGroup = isAdmin || isManager;
+    }
     return res.render("main/partials/post-page", { post });
   } else {
     return res.status(404).json({ error: "Post not found" });
@@ -206,6 +230,24 @@ const updatePostContent = async (req, res) => {
     }
   }
 };
+
+// Remove a post's group (button shows only to managers/admins of the group)
+async function removeGroup(req, res) {
+  try {
+    const postId = req.params.id;
+    const updated = await Post.findByIdAndUpdate(
+      postId,
+      { $unset: { group: "" } },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: "Post not found" });
+    return res.json({ ok: true, postId });
+  } catch (err) {
+    console.error("removeGroup error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
 
 const deletePost = async (req, res) => {
   const userId = req.session._id;
@@ -288,6 +330,7 @@ module.exports = {
   renderMainFeed,
   renderMyFeed,
   updatePostContent,
+  removeGroup,
   deletePost,
   createPost,
   getCreatePostWindow,

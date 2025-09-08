@@ -19,16 +19,16 @@
 <!------------------------------ top group area ------------------------------>
 
 <!-- group cover image if exists -->
-<div class="group-header">
+<div class="group-header" >
   <% if (coverUrl) { %>
     <img class="group-cover" src="<%= coverUrl %>" alt="<%= group.displayName %> cover">
   <% } %>
 </div>
 
 <!-- Group header -->
-<div class="row align-items-center justify-content-between mb-3">
+<div class="row align-items-center justify-content-between mb-3" id="group-title-anchor">
   <!-- Title -->
-  <div class="col">
+  <div class="col" >
     <h1 class="post-title mb-0" id="group-title">
       <%= group.displayName %>
     </h1>
@@ -62,7 +62,7 @@
 <!------------------------------ main content area ------------------------------>
 
  <!-- 2 MAIN CONTENT COLS part -->
-<div id="group-columns">
+<div id="group-columns" >
   <!-- LEFT COL: posts using main_page.js -->
   <div class="left-col">
     <ul id="post-list" class="post-list" data-group="<%= group.groupName %>" data-groupid="<%= group._id %>">
@@ -70,21 +70,69 @@
   </div>
 
   <!-- RIGHT COL: group info -->
-  <div class="right-col">
-    <!-- About box that matches a post exactly -->
+  <div class="right-col" id="group-right-col">
+    <!-- About box -->
     <div id="group-about" class="card post">
       <div class="card-header d-flex align-items-center justify-content-between">
         <h3 class="post-title mb-0">About this Group:</h3>
         <div class="post-header-right-side"></div>
       </div>
-  
+
       <div class="card-body post-block">
-        <p class="post-text mb-0">
-          <%= group?.description || 'No description yet.' %>
-        </p>
+        <p class="post-text mb-0"><%= (group?.description || 'No description yet.').trim() %></p>
       </div>
     </div>
-  
+
+    <!-- === Group Settings (admins only) === -->
+    <div id="group-settings-card" class="d-none card post" data-group="<%= group.groupName %>">
+      <!-- card header -->
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h3 class="post-title mb-0">Edit (<%= group.displayName %>) Group</h3>
+        <div class="post-header-right-side"></div>
+      </div>
+
+      <!-- card body -->
+      <div class="card-body post-block">
+        <div class="form-card">
+          
+          <form id="edit-group-form" novalidate>
+            <!-- Group name  -->
+            <div class="form-group">
+              <label for="newGroupName" class="form-label">Edit Group Name</label>
+              <input id="newGroupName" name="newGroupName" type="text" class="text-input"
+                value="<%= group.displayName %>" />
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+              <label for="editDescription" class="form-label">Edit Group Description</label>
+              <textarea id="editDescription" name="description" rows="3"
+                class="text-area"><%- group.description || '' %></textarea>
+            </div>
+
+            <!-- Cover image -->
+            <div class="form-group">
+              <label class="form-label">Edit Cover Image</label>
+              <span id="coverImageHintEdit" class="form-text d-block mb-1">
+                Prefer to use 3:1 ratio image, if not image will be cropped!
+              </span>
+              <button id="coverPickBtnEdit" type="button" class="btn btn-sm btn-primary mt-2">Change Cover</button>
+              <input type="file" id="groupCoverEdit" accept="image/png, image/jpeg, image/webp" style="display:none">
+            </div>
+
+            <!-- Actions -->
+            <div class="form-group">
+              <button type="submit" class="primary-btn w-full">Save changes</button>
+            </div>
+            <div class="form-group">
+              <button type="button" id="delete-group-btn" class="btn btn-danger">DELETE THIS GROUP</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+
     <!-- === Members === -->
     <div id="members-card-anchor"></div>
     <div id="group-members-card" class="card post" data-group="<%= group.groupName %>">
@@ -96,63 +144,18 @@
             </span>)</span>
         </h3>
       </div>
-  
+
       <div class="card-body post-block">
         <h4 class="text-muted mb-2">Admins</h4>
         <ul class="members-list mb-3" id="members-admins"></ul>
-  
+
         <h4 class="text-muted mb-2">Managers</h4>
         <ul class="members-list mb-3" id="members-managers"></ul>
-  
+
         <h4 class="text-muted mb-2">Members</h4>
         <ul class="members-list" id="members-plain"></ul>
       </div>
     </div>
-  
-    <!-- === Group Settings === -->
-    <section id="group-settings-card" class="d-none card post" data-group="<%= group.groupName %>">
-      <ul class="post-list">
-        <li class="post-list-item">
-          <div class="form-card">
-            <h3 class="form-title">Edit (<%= group.displayName %>) Group</h3>
-            <p id="edit-group-msg" class="form-text d-none"></p>
-  
-            <form id="edit-group-form" novalidate>
-              <!-- Group name  -->
-              <div class="form-group">
-                <label for="newGroupName" class="form-label">Edit Group Name</label>
-                <input id="newGroupName" name="newGroupName" type="text" class="text-input"
-                  value="<%= group.displayName %>" />
-              </div>
-  
-              <!-- Description -->
-              <div class="form-group">
-                <label for="editDescription" class="form-label">Edit Group Description</label>
-                <textarea id="editDescription" name="description" rows="3"
-                  class="text-area"><%- group.description || '' %></textarea>
-              </div>
-  
-              <!-- Cover image (same UI as create-group) -->
-              <div class="form-group">
-                <label class="form-label">Edit Cover Image</label>
-                <button id="coverPickBtnEdit" type="button" class="btn btn-sm btn-primary mt-2">Change Cover</button>
-                <span id="coverImageHintEdit" class="form-text ms-2">Prefer to use 3:1 ratio image, if not image will be
-                  cropped!</span>
-                <input type="file" id="groupCoverEdit" accept="image/png, image/jpeg, image/webp" style="display:none">
-              </div>
-  
-              <!-- Actions -->
-              <div class="form-group">
-                <button type="submit" class="primary-btn w-full">Save changes</button>
-              </div>
-              <div class="form-group">
-                <button type="button" id="delete-group-btn" class="btn btn-danger">DELETE THIS GROUP</button>
-              </div>
-            </form>
-          </div>
-        </li>
-      </ul>
-</section>
   </div>
 </div>
 <script type="module" src="/contentWindow/group-feed.js"></script>

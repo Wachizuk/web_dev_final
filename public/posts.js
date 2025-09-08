@@ -215,6 +215,21 @@ const addPostCardEventListeners = (postCard) => {
       window.scroll({ top: 0, behavior: "smooth" });
     });
   });
+
+  postCard.querySelector(".post-manage-group-btn")
+  ?.addEventListener("click", async () => {
+    if (!confirm("Remove this post from the group? The post will remain outside the group.")) {
+      return;
+    }
+    try {
+      await removePostFromGroup(postCard.dataset.postId);
+      const li = postCard.closest("li.post-list-item");
+      (li || postCard).remove();
+    } catch (err) {
+      console.error(err);
+      alert("Could not remove the post from the group.");
+    }
+  });
 };
 
 //POST DATA CHANGERS
@@ -249,11 +264,12 @@ async function createPost(title, contentBlocks, groupId = null) {
 }
 
 async function removePostFromGroup(postId) {
-  const res = await fetch(routes.posts.removeGroup(postId), {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ postId, group }),
-  });
+  const res = await fetch(routes.posts.removeGroup(postId), { method: "PATCH", });
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`Failed to remove from group: ${res.status} ${t}`);
+  }
+  return true;
 }
 
 /**

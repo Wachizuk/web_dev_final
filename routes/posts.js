@@ -20,7 +20,7 @@ router.route('/edit/:id')
 .patch(userController.isLoggedIn, postController.updatePostContent);
 
 router.patch('/toggleLike/:id', userController.isLoggedIn, postController.toggleLike);
-// router.patch('/removeGroup/:id', userController.isLoggedIn, postController.removeGroup);
+router.patch('/removeGroup/:id', userController.isLoggedIn, postController.removeGroup);
 
 router.get('/group/:groupId', userController.isLoggedIn, postController.getAllGroupPosts);
 router.get('/feed', userController.isLoggedIn, postController.getUserFeedPosts)
