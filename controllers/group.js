@@ -4,13 +4,17 @@ const {
   findMissingUsernames,
   findUserIdsByUsernames,
 } = require("../services/user");
+// const groupFeedRoute = "main/partials/group-feed";
+const postModel = require("../models/post");
+const groupModel = require("../models/group");
+const userModel = require("../models/user");
+const services = require("../services/group");
+
 
 const createGroupRoute = "main/partials/create-group";
 const allGroupsRoute = "main/partials/all-groups";
 
-// const groupFeedRoute = "main/partials/group-feed";
-const postModel = require("../models/post");
-const groupModel = require("../models/group");
+
 
 // GET /groups/new - render the create form
 async function createGroupPage(req, res) {
@@ -247,9 +251,6 @@ async function setMemberRole(req, res) {
 
 // --------------------------------------- Edit / Delete Group related function ---------------------------------
 
-const services = require("../services/group");
-const Group = require("../models/group"); // used for delete
-
 async function updateGroup(req, res) {
   try {
     const viewerId = req.session?._id;
@@ -333,6 +334,12 @@ async function deleteGroup(req, res) {
 
     // detach posts from this group first:
     await postModel.updateMany({ group: group._id }, { $unset: { group: 1 } });
+
+    await userModel.updateMany(
+      { groups: group._id },
+      { $pull: { groups: group._id } }
+    );
+
 
     // delete the group document
     await groupModel.deleteOne({ _id: group._id });
