@@ -76,13 +76,18 @@ myPostsBtn.addEventListener('click', async () => {
   await renderContentWindow(routes.myPosts);
 })
 
+const allGroupsBtn = document.getElementById("all-groups-btn");
+allGroupsBtn.addEventListener('click', async () => {
+  await renderContentWindow(routes.groups.allGroups);
+})
+
 window.addEventListener('DOMContentLoaded', async () => {
   await renderContentWindow(window.location.hash.substring(1))
 })
 
-
-
 window.addEventListener('hashchange', async () => {
+  //variable is defined in renderer and set to true if change was triggered by it
+  //we dont need to run it again in that case
   if(stateTracker.internalHashChange) {
     stateTracker.internalHashChange = false;
     return;

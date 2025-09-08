@@ -1,18 +1,19 @@
 import { renderAllPosts, getPostCard } from "../posts.js";
+import { getFriends } from "../users.js";
 import { renderContentWindow } from "../utils/renderer.js";
 import { routes } from "../utils/routes.js";
 
 console.log("group feed loaded");
 //renderAllPosts()
-renderGroupPosts()
+renderGroupPosts();
 
 async function renderGroupPosts() {
   const list = document.getElementById("post-list");
-  const gid  = list?.dataset.groupid;      // we set this in the EJS
-  if (!gid) return renderAllPosts();       // fallback: original behavior
+  const gid = list?.dataset.groupid; // we set this in the EJS
+  if (!gid) return renderAllPosts(); // fallback: original behavior
 
   list.innerHTML = "";
-  const res   = await fetch(`/posts/group/${gid}`);
+  const res = await fetch(`/posts/group/${gid}`);
   const posts = res.ok ? await res.json() : [];
 
   if (!posts.length) {
@@ -32,7 +33,7 @@ async function renderGroupPosts() {
 
 //------------------------------ Members card --------------------------------
 
-function initMembersCard() {
+async function initMembersCard() {
   var card = document.getElementById("group-members-card");
   if (!card) return;
 
@@ -55,9 +56,9 @@ function initMembersCard() {
       if (c2) c2.textContent = String(total);
 
       // 1) Always show lists to everyone (no admin controls yet)
-        fillList("members-admins",   data.admins,   false, 'admin');
-        fillList("members-managers", data.managers, false, 'manager');
-        fillList("members-plain",    data.plainUsers, false, 'member');
+      fillList("members-admins", data.admins, false, "admin");
+      fillList("members-managers", data.managers, false, "manager");
+      fillList("members-plain", data.plainUsers, false, "member");
 
       // 2) Then (optionally) check my role; if I'm admin, re-render with admin buttons
       fetch("/groups/" + groupName + "/membership")
@@ -66,9 +67,9 @@ function initMembersCard() {
         })
         .then(function (m) {
           if (m && m.role === "admin") {
-            fillList("members-admins", data.admins, true, 'admin');
-            fillList("members-managers", data.managers, true, 'manager');
-            fillList("members-plain", data.plainUsers, true, 'member');
+            fillList("members-admins", data.admins, true, "admin");
+            fillList("members-managers", data.managers, true, "manager");
+            fillList("members-plain", data.plainUsers, true, "member");
           }
         });
     })
@@ -81,172 +82,163 @@ function fillList(id, arr, isAdmin, currentRole) {
   var list = document.getElementById(id);
   if (!list) return;
   var html = (arr || [])
-    .map(function (u) {
-      var uid = u && (u._id || u.id) ? u._id || u.id : "";
-      var name = (u && u.username) || "user";
-      return '' +
-  '<li class="members-item">' +
+    .map((u) => {
+      var uid = u && u._id ? u._id : "";
+      var name = u && u.username;
+      return (
+        "" +
+        '<li class="members-item">' +
+        // Row 1: name (left) + Add Friend (right)
+        '<div class="members-top">' +
+        '<span class="members-name">' +
+        name +
+        "</span>" +
+        (function () {
+          var isFriend = friends.includes(uid); // use whatever flag your API returns
+          var state = isFriend ? "friend" : "not-friend";
+          var label = isFriend ? "Remove Friend" : "Add Friend";
 
+          // match the profile page’s classes/behavior
+          var btnCls =
+            "btn btn-sm friend-btn " +
+            (isFriend ? "btn-outline-secondary " : "btn-primary ") +
+            (isFriend ? "remove-friend" : "add-friend");
 
-    // Row 1: name (left) + Add Friend (right)
-    '<div class="members-top">' +
-      '<span class="members-name">' + name + '</span>' +
-      (function () {
-        var isFriend = !!(u && (u.isFriend || u.friend)); // use whatever flag your API returns
-        var state    = isFriend ? 'friend' : 'not-friend';
-        var label    = isFriend ? 'Remove Friend' : 'Add Friend';
-
-    // match the profile page’s classes/behavior
-        var btnCls = 'btn btn-sm friend-btn ' +
-                    (isFriend ? 'btn-outline-secondary' : 'btn-primary');
-
-        return '' +
-            '<button type="button" class="' + btnCls + '" ' +
-                    'data-action="friend-toggle" ' +
-                    'data-user="' + String(uid) + '" ' +
-                    'data-state="' + state + '">' +
+          return (
+            "" +
+            '<button type="button" class="' +
+            btnCls +
+            '" ' +
+            'data-action="friend-toggle" ' +
+            'data-user="' +
+            String(uid) +
+            '" ' +
+            'data-state="' +
+            state +
+            '">' +
             label +
-            '</button>';
+            "</button>"
+          );
         })() +
-    '</div>' +
-
-    // Row 2: admin-only role controls (labels depend on currentRole)
-    (isAdmin ? (function(){
-      if (currentRole === 'admin') {
-        return '' +
-          '<div class="members-admin">' +
-            '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
-                    'data-action="remove-admin" data-user="' + String(uid) + '">Remove admin</button>' +
-            '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
-                    'data-action="make-manager" data-user="' + String(uid) + '">Make manager</button>' +
-            '<button type="button" class="btn btn-sm btn-outline-danger" ' +
-                    'data-action="remove-member" data-user="' + String(uid) + '">Remove</button>' +
-          '</div>';
-      }
-      if (currentRole === 'manager') {
-        return '' +
-          '<div class="members-admin">' +
-            '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
-                    'data-action="make-admin" data-user="' + String(uid) + '">Make admin</button>' +
-            '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
-                    'data-action="remove-manager" data-user="' + String(uid) + '">Remove manager</button>' +
-            '<button type="button" class="btn btn-sm btn-outline-danger" ' +
-                    'data-action="remove-member" data-user="' + String(uid) + '">Remove</button>' +
-          '</div>';
-      }
-      // member/plain
-      return '' +
-        '<div class="members-admin">' +
-          '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
-                  'data-action="make-admin" data-user="' + String(uid) + '">Make admin</button>' +
-          '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
-                  'data-action="make-manager" data-user="' + String(uid) + '">Make manager</button>' +
-          '<button type="button" class="btn btn-sm btn-outline-danger" ' +
-                  'data-action="remove-member" data-user="' + String(uid) + '">Remove</button>' +
-        '</div>';
-    })() : '') +
-
-  '</li>';
+        "</div>" +
+        // Row 2: admin-only role controls (labels depend on currentRole)
+        (isAdmin
+          ? (function () {
+              if (currentRole === "admin") {
+                return (
+                  "" +
+                  '<div class="members-admin">' +
+                  '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
+                  'data-action="remove-admin" data-user="' +
+                  String(uid) +
+                  '">Remove admin</button>' +
+                  '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
+                  'data-action="make-manager" data-user="' +
+                  String(uid) +
+                  '">Make manager</button>' +
+                  '<button type="button" class="btn btn-sm btn-outline-danger" ' +
+                  'data-action="remove-member" data-user="' +
+                  String(uid) +
+                  '">Remove</button>' +
+                  "</div>"
+                );
+              }
+              if (currentRole === "manager") {
+                return (
+                  "" +
+                  '<div class="members-admin">' +
+                  '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
+                  'data-action="make-admin" data-user="' +
+                  String(uid) +
+                  '">Make admin</button>' +
+                  '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
+                  'data-action="remove-manager" data-user="' +
+                  String(uid) +
+                  '">Remove manager</button>' +
+                  '<button type="button" class="btn btn-sm btn-outline-danger" ' +
+                  'data-action="remove-member" data-user="' +
+                  String(uid) +
+                  '">Remove</button>' +
+                  "</div>"
+                );
+              }
+              // member/plain
+              return (
+                "" +
+                '<div class="members-admin">' +
+                '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
+                'data-action="make-admin" data-user="' +
+                String(uid) +
+                '">Make admin</button>' +
+                '<button type="button" class="btn btn-sm btn-outline-secondary" ' +
+                'data-action="make-manager" data-user="' +
+                String(uid) +
+                '">Make manager</button>' +
+                '<button type="button" class="btn btn-sm btn-outline-danger" ' +
+                'data-action="remove-member" data-user="' +
+                String(uid) +
+                '">Remove</button>' +
+                "</div>"
+              );
+            })()
+          : "") +
+        "</li>"
+      );
     })
     .join("");
-    list.innerHTML = html;
+  list.innerHTML = html;
 }
 
 function initMembersButton() {
-  var btn = document.getElementById('group-members-btn');
+  var btn = document.getElementById("group-members-btn");
   if (!btn) return;
 
-  btn.addEventListener('click', function (e) {
+  btn.addEventListener("click", function (e) {
     e.preventDefault();
-    var anchor = document.getElementById('members-card-anchor') || document.getElementById('group-members-card');
+    var anchor =
+      document.getElementById("members-card-anchor") ||
+      document.getElementById("group-members-card");
     if (anchor && anchor.scrollIntoView) {
-      anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      anchor.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   });
 }
 
-async function friendBtnAction(btn) {
-  const uid   = btn.getAttribute('data-user');
-  let state   = btn.getAttribute('data-state') || 'not-friend'; // 'friend' | 'not-friend'
-  const method = (state === 'friend') ? 'DELETE' : 'POST';
-
-  if (!uid) return;
-
-  if (btn.dataset.busy === '1') return;
-  btn.dataset.busy = '1';
-
-  try {
-    const res = await fetch('/user/friends/' + encodeURIComponent(uid), {
-      method,
-      credentials: 'same-origin',
-      headers: { 'Accept': 'application/json' }
-    });
-
-    const ct  = res.headers.get('content-type') || '';
-    const json = ct.includes('application/json') ? await res.json() : {};
-
-    if (!res.ok) {
-      const msg = json && (json.message || json.error);
-      throw new Error(msg || ('Request failed (' + res.status + ')'));
-    }
-
-    // prefer server truth; else infer from previous state
-    const nowFriend = (typeof json.isFriend !== 'undefined')
-      ? !!json.isFriend
-      : (state !== 'friend');
-
-    // update ALL friend-toggle buttons for this uid (mirrors profile)
-    document.querySelectorAll('[data-action="friend-toggle"][data-user="' + uid + '"]')
-      .forEach(function (b) {
-        b.setAttribute('data-state', nowFriend ? 'friend' : 'not-friend');
-        b.textContent = nowFriend ? 'Remove Friend' : 'Add Friend';
-
-        // profile-like styling
-        b.classList.toggle('btn-primary', !nowFriend);
-        b.classList.toggle('btn-outline-secondary', nowFriend);
-        b.classList.add('friend-btn'); // ensure class exists for consistent styling
-      });
-
-  } catch (err) {
-    console.error('[friends] error:', err);
-    alert(err.message || 'Action failed');
-  } finally {
-    btn.dataset.busy = '0';
-  }
-}
-
 //------------------------------ Members admin actions ----------------------------
 function initMembersAdminActions() {
-  var membersCard = document.getElementById('group-members-card');
+  var membersCard = document.getElementById("group-members-card");
   if (!membersCard) return;
 
   // Event delegation: listen for clicks on any button with [data-action] inside the card
-  membersCard.addEventListener('click', function (evt) {
-    var actionBtn = evt.target.closest('[data-action]');
+  membersCard.addEventListener("click", function (evt) {
+    var actionBtn = evt.target.closest("[data-action]");
     if (!actionBtn || !membersCard.contains(actionBtn)) return;
 
-    var action = actionBtn.getAttribute('data-action'); // 'remove-member' | 'make-admin' | 'make-manager' | 'remove-admin' | 'remove-manager'
+    var action = actionBtn.getAttribute("data-action"); // 'remove-member' | 'make-admin' | 'make-manager' | 'remove-admin' | 'remove-manager'
     if (!action) return;
 
-    console.log(action)
 
-    if(action == "friend-toggle") {
+    if (action == "friend-toggle") {
       try {
         friendBtnAction(actionBtn);
       } catch (e) {
-          console.error(e.message)
+        console.error(e.message);
       }
-      
-      return
+
+      return;
     }
 
     // Only handle the admin controls; ignore other buttons like friend-toggle
-    var isRoleAction = (action === 'make-admin' || action === 'make-manager' || action === 'remove-admin' || action === 'remove-manager');
-    var isRemoveMember = (action === 'remove-member');
+    var isRoleAction =
+      action === "make-admin" ||
+      action === "make-manager" ||
+      action === "remove-admin" ||
+      action === "remove-manager";
+    var isRemoveMember = action === "remove-member";
     if (!isRoleAction && !isRemoveMember) return;
 
-    var targetUserId = actionBtn.getAttribute('data-user');
-    var groupName    = membersCard.getAttribute('data-group');
+    var targetUserId = actionBtn.getAttribute("data-user");
+    var groupName = membersCard.getAttribute("data-group");
     if (!targetUserId || !groupName) return;
 
     // Prevent double submits
@@ -254,36 +246,45 @@ function initMembersAdminActions() {
     actionBtn.disabled = true;
 
     // Build request
-    var url, fetchOptions = { method: 'POST' };
+    var url,
+      fetchOptions = { method: "POST" };
 
     if (isRemoveMember) {
-      url = '/groups/' + groupName + '/members/' + targetUserId + '/remove';
+      url = "/groups/" + groupName + "/members/" + targetUserId + "/remove";
     } else {
-        // role change
+      // role change
       var targetRole =
-        action === 'make-admin'     ? 'admin'   :
-        action === 'make-manager'   ? 'manager' :
-        'member';
+        action === "make-admin"
+          ? "admin"
+          : action === "make-manager"
+          ? "manager"
+          : "member";
 
-      url = '/groups/' + groupName + '/members/' + targetUserId + '/role';
-      fetchOptions.headers = { 'Content-Type': 'application/json' };
-      fetchOptions.body    = JSON.stringify({ role: targetRole });
+      url = "/groups/" + groupName + "/members/" + targetUserId + "/role";
+      fetchOptions.headers = { "Content-Type": "application/json" };
+      fetchOptions.body = JSON.stringify({ role: targetRole });
     }
 
     // Send and refresh
     fetch(url, fetchOptions)
       .then(function (res) {
-        return res.json().catch(function(){ return {}; }).then(function (j) {
-          if (!res.ok) throw new Error(j && j.message || ('HTTP ' + res.status));
-          return j;
-        });
+        return res
+          .json()
+          .catch(function () {
+            return {};
+          })
+          .then(function (j) {
+            if (!res.ok)
+              throw new Error((j && j.message) || "HTTP " + res.status);
+            return j;
+          });
       })
       .then(function () {
         // lists + counts based on fresh server state
         initMembersCard();
       })
       .catch(function (err) {
-        alert(err && err.message ? err.message : 'Request failed');
+        alert(err && err.message ? err.message : "Request failed");
       })
       .finally(function () {
         actionBtn.disabled = false;
@@ -291,33 +292,25 @@ function initMembersAdminActions() {
   });
 }
 
-
-// expose to renderer
-window.groupFeed = window.groupFeed || {};
-window.groupFeed.initMembersCard = initMembersCard;
-window.groupFeed.initMembersButton = initMembersButton;
-
-
-
 //----------------------------------------------------------------------------------
 
 //------------------------------ Follow/Unfollow button ----------------------------
 
 function initFollowButton() {
-  var btn = document.getElementById('follow-group-btn');
+  var btn = document.getElementById("follow-group-btn");
   if (!btn) return;
 
-  var groupName = btn.getAttribute('data-group');
+  var groupName = btn.getAttribute("data-group");
 
-  btn.addEventListener('click', function () {
-    fetch('/groups/' + groupName + '/follow', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+  btn.addEventListener("click", function () {
+    fetch("/groups/" + groupName + "/follow", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
     })
       .then(async function (res) {
         if (!res.ok) {
           const j = await res.json();
-          throw new Error(j && j.message || ('HTTP ' + res.status));
+          throw new Error((j && j.message) || "HTTP " + res.status);
         }
         return res.json();
       })
@@ -326,19 +319,22 @@ function initFollowButton() {
 
         // flip label
         var followed = !!data.followed;
-        btn.textContent = followed ? 'Unfollow' : 'Follow Group';
-        btn.classList.toggle('btn-primary', !followed);
-        btn.classList.toggle('btn-outline-primary', followed);
-        btn.setAttribute('data-followed', followed ? '1' : '0');
+        btn.textContent = followed ? "Unfollow" : "Follow Group";
+        btn.classList.toggle("btn-primary", !followed);
+        btn.classList.toggle("btn-outline-primary", followed);
+        btn.setAttribute("data-followed", followed ? "1" : "0");
 
         // update Members button count
-        var membersBtn = document.getElementById('group-members-btn');
-        if (membersBtn) membersBtn.textContent = 'Members (' + (data.membersCount || 0) + ')';
+        var membersBtn = document.getElementById("group-members-btn");
+        if (membersBtn)
+          membersBtn.textContent = "Members (" + (data.membersCount || 0) + ")";
 
         initMembersCard();
         window.location.reload();
       })
-      .catch(function (e) { alert(e.message); });
+      .catch(function (e) {
+        alert(e.message);
+      });
   });
 }
 
@@ -346,27 +342,25 @@ function initFollowButton() {
 
 //------------------------------ Group settings card ----------------------------
 
-
 function initGroupSettingsCard() {
   const btn = document.getElementById("group-settings-btn");
   const card = document.getElementById("group-settings-card");
   if (!btn || !card) {
-    console.error('Settings card elements not found:', {
+    console.error("Settings card elements not found:", {
       btn: !!btn,
-      card: !!card
+      card: !!card,
     });
     return;
   }
 
   const form = card.querySelector("#edit-group-form");
   if (!form) {
-    console.error('Edit form not found in settings card');
+    console.error("Edit form not found in settings card");
     return;
   }
 
-
   const groupName = card.dataset.group || "";
-//   const form = card.querySelector("#edit-group-form");
+  //   const form = card.querySelector("#edit-group-form");
   const delBtn = card.querySelector("#delete-group-btn");
 
   // Cover picker (same as create-group)
@@ -426,10 +420,8 @@ function initGroupSettingsCard() {
     const data = await res.json().catch(() => ({}));
     const finalName = data.groupName || groupName;
 
-    
     renderContentWindow(routes.groups.groupName(finalName));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
- 
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
   // Delete group
@@ -446,45 +438,51 @@ function initGroupSettingsCard() {
   });
 }
 //----------------------------------------------------------------------------------
+var friends = [];
 
-initFollowButton();
-initMembersButton();
-initMembersCard();
-initMembersAdminActions();
-initGroupSettingsCard();
+async function initAll() {
+  initFollowButton();
+  initMembersButton();
+  friends = await getFriends();
+  friends = friends ? friends.map((fr) => fr._id) : [];
+  initMembersCard();
+  initMembersAdminActions();
+  initGroupSettingsCard();
+}
 
-// async function friendBtnAction(btn) {
-//   console.log(btn)
-//     const friendUid = btn.dataset.user;
-//     const method = btn.classList.contains("add-friend") ? "POST" : "DELETE"
+initAll();
 
-//   try {
-//     const res = await fetch(`/user/friends/${encodeURIComponent(friendUid)}`, {
-//       method ,
-//       credentials: "same-origin",        // send cookies/session
-//       headers: { "Accept": "application/json" },
-//     });
+async function friendBtnAction(btn) {
+  const friendUid = btn.dataset.user;
+  const method = btn.classList.contains("btn-primary") ? "POST" : "DELETE";
 
-//     const ct = res.headers.get("content-type") || "";
-//     const payload = ct.includes("application/json")
-//       ? await res.json()
-//       : { success: false, message: await res.text() };
+  try {
+    const res = await fetch(`/user/friends/${encodeURIComponent(friendUid)}`, {
+      method,
+      credentials: "same-origin", // send cookies/session
+      headers: { Accept: "application/json" },
+    });
 
+    const ct = res.headers.get("content-type") || "";
+    const payload = ct.includes("application/json")
+      ? await res.json()
+      : { success: false, message: await res.text() };
 
-//     if (!res.ok || !payload.success) {
-//       throw new Error(payload.message || `Request failed (${res.status})`);
-//     }
-   
+    if (!res.ok || !payload.success) {
+      throw new Error(payload.message || `Request failed (${res.status})`);
+    }
 
-//     btn.classList.toggle("add-friend");
-//     btn.classList.toggle("remove-friend");
-//     btn.textContent = btn.classList.contains("add-friend") ? "Add friend" : "Remove friend"
-
-//   } catch (err) {
-//     console.error("[friends] error:", err);
-//     alert(err.message || "Action failed");
-//   }
-// }
-
+    btn.classList.toggle("add-friend");
+    btn.classList.toggle("remove-friend");
+    btn.classList.toggle("btn-primary");
+    btn.classList.toggle("btn-outline-secondary");
+    btn.textContent = btn.classList.contains("add-friend")
+      ? "Add friend"
+      : "Remove friend";
+  } catch (err) {
+    console.error("[friends] error:", err);
+    alert(err.message || "Action failed");
+  }
+}
 
 //----------------------------------------------------------------------------------

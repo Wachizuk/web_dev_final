@@ -18,11 +18,19 @@ router.route("/register")
 .get(userController.registerPage);
 
 // ---------------- SEARCH BAR ROUTE ----------------
+
+router.route("/friends")
+.get(userController.isLoggedIn, userController.getFriends);
+
+router.route("/friends/is-friend/:id")
+.get(userController.isLoggedIn, userController.isFriend);
+
 router.route("/friends/:userId")
 .post( userController.isLoggedIn, userController.addFriend);
 
 router.route("/friends/:userId")
 .delete(userController.isLoggedIn, userController.removeFriend);
+
 
 // ---------------- PROFILE ROUTE ----------------
 router.route("/profile")

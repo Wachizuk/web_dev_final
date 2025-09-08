@@ -8,6 +8,7 @@ const base = {
 const groups = {
   new: `${base.groups}/new`,
   groupName: (groupName) => `${base.groups}/${groupName}`,
+  allGroups: `${base.groups}/allGroups`
 };
 
 const posts = {
@@ -31,6 +32,8 @@ const users = {
   settings: `${base.users}/settings`,
   profile: `${base.users}/profile`,
   selectedProfile: `${base.users}/profile/:username`,
+  getFriends: `${base.users}/friends`,
+  isFriend: (friendId) => `${base.users}/friends/${friendId}`,
 };
 
 const routes = {
