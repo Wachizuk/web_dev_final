@@ -1,7 +1,12 @@
 const groupService = require("../services/group");
-const { toUsernameArray, findMissingUsernames, findUserIdsByUsernames } = require("../services/user");
+const {
+  toUsernameArray,
+  findMissingUsernames,
+  findUserIdsByUsernames,
+} = require("../services/user");
 
 const createGroupRoute = "main/partials/create-group";
+const allGroupsRoute = "main/partials/all-groups";
 // const groupFeedRoute = "main/partials/group-feed";
 const postModel = require("../models/post");
 const groupModel = require("../models/group");
@@ -11,13 +16,19 @@ async function createGroupPage(req, res) {
   res.render(createGroupRoute, {});
 }
 
+// GET /groups/new - render the create form
+async function allGroupsPage(req, res) {
+  res.render(allGroupsRoute, {});
+}
+
 // POST /groups - create a group
 async function createGroup(req, res) {
   try {
-    
     const displayName = String(req.body.displayName || "").trim();
     if (!displayName) {
-      return res.status(400).json({ ok: false, message: "Group name is required" });
+      return res
+        .status(400)
+        .json({ ok: false, message: "Group name is required" });
     }
 
     // set groupName by normalizing displayName
@@ -26,10 +37,12 @@ async function createGroup(req, res) {
       return res.status(400).json({ ok: false, message: "Invalid Group name" });
     }
 
-    // check if groupName unique 
+    // check if groupName unique
     const exists = await groupService.getGroupByName(groupName);
     if (exists) {
-      return res.status(400).json({ ok: false, message: "Group name already exists" });
+      return res
+        .status(400)
+        .json({ ok: false, message: "Group name already exists" });
     }
 
     // make sure admins and managers are valid arrays
@@ -55,26 +68,34 @@ async function createGroup(req, res) {
       findUserIdsByUsernames(managerUsernames),
     ]);
 
-    // initiate creator as an admin 
+    // initiate creator as an admin
     const creatorId = String(req.session._id);
-    const admins   = Array.from(new Set([creatorId, ...adminIdsResolved.map(String)]));
+    const admins = Array.from(
+      new Set([creatorId, ...adminIdsResolved.map(String)])
+    );
     const managers = Array.from(new Set(managerIdsResolved.map(String)));
 
     const members = { admins, managers, plainUsers: [] };
 
     // create
     const created = await groupService.createGroup({
-      groupName:   groupName,
+      groupName: groupName,
       displayName: displayName,
       description: (req.body.description || "").trim(),
       members,
     });
 
     // success
-    return res.json({ ok: true, groupName: created.groupName, displayName: created.displayName });
+    return res.json({
+      ok: true,
+      groupName: created.groupName,
+      displayName: created.displayName,
+    });
   } catch (err) {
     console.error("createGroup error:", err);
-    return res.status(500).json({ ok: false, message: "Server error creating group" });
+    return res
+      .status(500)
+      .json({ ok: false, message: "Server error creating group" });
   }
 }
 
@@ -84,20 +105,21 @@ async function groupPage(req, res) {
     const group = await groupService.getGroupByName(groupName);
     const userId = req.session._id;
 
-    const isAdmin = Array.isArray(group.members.admins) && group.members.admins.some(a => String(a) === String(userId));
+    const isAdmin =
+      Array.isArray(group.members.admins) &&
+      group.members.admins.some((a) => String(a) === String(userId));
 
-    res.render('main/partials/group-feed', {
+    res.render("main/partials/group-feed", {
       group,
       coverUrl: group.coverFile ? `/uploads/groups/${group.coverFile}` : null,
       isAdmin,
       user: { _id: userId },
     });
   } catch (err) {
-    console.error('groupPage error:', err.message);
-    res.status(404).send('Group not found');
+    console.error("groupPage error:", err.message);
+    res.status(404).send("Group not found");
   }
 }
-
 
 // --------------------------------------- Follow related function ---------------------------------
 
@@ -106,9 +128,15 @@ async function removeMember(req, res) {
   try {
     const { groupName, userId } = req.params;
     const result = await groupService.toggleFollow(groupName, userId);
-    return res.json({ ok: true, removed: true, membersCount: result.membersCount });
+    return res.json({
+      ok: true,
+      removed: true,
+      membersCount: result.membersCount,
+    });
   } catch (err) {
-    return res.status(err.status || 500).json({ ok: false, message: err.message || 'Server error' });
+    return res
+      .status(err.status || 500)
+      .json({ ok: false, message: err.message || "Server error" });
   }
 }
 
@@ -118,11 +146,16 @@ async function getMembership(req, res) {
     const { groupName } = req.params;
     const userId = req.session._id;
 
-    const { followed, role, membersCount } = await groupService.getMembership(groupName, userId);
+    const { followed, role, membersCount } = await groupService.getMembership(
+      groupName,
+      userId
+    );
     return res.status(200).json({ ok: true, followed, role, membersCount });
   } catch (err) {
-    console.error('getMembership error:', err.message);
-    return res.status(err.status || 500).json({ ok: false, message: err.message });
+    console.error("getMembership error:", err.message);
+    return res
+      .status(err.status || 500)
+      .json({ ok: false, message: err.message });
   }
 }
 
@@ -131,15 +164,19 @@ async function toggleFollow(req, res) {
   try {
     const { groupName } = req.params;
     const userId = req.session._id;
-    const { followed, membersCount } = await groupService.toggleFollow(groupName, userId);
+    const { followed, membersCount } = await groupService.toggleFollow(
+      groupName,
+      userId
+    );
     return res.status(200).json({ ok: true, followed, membersCount });
   } catch (err) {
-    return res.status(err.status || 500).json({ ok: false, message: err.message });
+    return res
+      .status(err.status || 500)
+      .json({ ok: false, message: err.message });
   }
 }
 
 // -------------------------------------------------------------------------------------------------------
-
 
 // --------------------------------------- Group Members related function ---------------------------------
 
@@ -149,8 +186,10 @@ async function getMembers(req, res) {
     const data = await groupService.getMembers(groupName);
     return res.status(200).json({ ok: true, ...data });
   } catch (err) {
-    console.error('getMembers error:', err.message);
-    return res.status(err.status || 500).json({ ok: false, message: err.message });
+    console.error("getMembers error:", err.message);
+    return res
+      .status(err.status || 500)
+      .json({ ok: false, message: err.message });
   }
 }
 
@@ -158,94 +197,111 @@ async function getMembers(req, res) {
 async function setMemberRole(req, res) {
   try {
     const { groupName, userId } = req.params;
-    const role = (req.body && req.body.role) || ''; // 'admin' | 'manager' | 'member'
-    if (!['admin', 'manager', 'member'].includes(role)) {
-      return res.status(400).json({ ok: false, message: 'Invalid role' });
+    const role = (req.body && req.body.role) || ""; // 'admin' | 'manager' | 'member'
+    if (!["admin", "manager", "member"].includes(role)) {
+      return res.status(400).json({ ok: false, message: "Invalid role" });
     }
 
     const result = await groupService.setMemberRole(groupName, userId, role);
-    return res.json({ ok: true, role: result.role, membersCount: result.membersCount });
+    return res.json({
+      ok: true,
+      role: result.role,
+      membersCount: result.membersCount,
+    });
   } catch (err) {
-    return res.status(err.status || 500).json({ ok: false, message: err.message || 'Server error' });
+    return res
+      .status(err.status || 500)
+      .json({ ok: false, message: err.message || "Server error" });
   }
 }
 
 // --------------------------------------------------------------------------------------------------------
 
-
 // --------------------------------------- Edit / Delete Group related function ---------------------------------
 
-const services = require('../services/group');
-const Group = require('../models/group'); // used for delete
+const services = require("../services/group");
+const Group = require("../models/group"); // used for delete
 
 async function updateGroup(req, res) {
   try {
-    const viewerId  = req.session?._id;
-    const current   = req.params.groupName;
+    const viewerId = req.session?._id;
+    const current = req.params.groupName;
     const { displayName, description } = req.body || {};
 
     const group = await services.getGroupByName(current);
-    if (!group) return res.status(404).send('Group not found');
+    if (!group) return res.status(404).send("Group not found");
 
     // admin-only
-    const isAdmin = Array.isArray(group.members?.admins) &&
-      group.members.admins.some(a => String(a) === String(viewerId));
-    if (!isAdmin) return res.status(403).send('Admins only');
+    const isAdmin =
+      Array.isArray(group.members?.admins) &&
+      group.members.admins.some((a) => String(a) === String(viewerId));
+    if (!isAdmin) return res.status(403).send("Admins only");
 
     const updates = {};
-    if (typeof description === 'string') updates.description = description.trim();
+    if (typeof description === "string")
+      updates.description = description.trim();
 
     let finalGroupName = group.groupName;
 
     // If displayName provided, update it and normalize to groupName
-    if (typeof displayName === 'string' && displayName.trim()) {
+    if (typeof displayName === "string" && displayName.trim()) {
       const cleanDisplay = displayName.trim();
       updates.displayName = cleanDisplay;
 
       // normalize to groupName
       const normalize =
-        (typeof services.normalizeGroupName === 'function')
+        typeof services.normalizeGroupName === "function"
           ? services.normalizeGroupName
-          : (s) => String(s).toLowerCase().trim().replace(/[^a-z0-9\- ]/g,'').replace(/\s+/g,'-');
+          : (s) =>
+              String(s)
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\- ]/g, "")
+                .replace(/\s+/g, "-");
 
       const derived = normalize(cleanDisplay);
 
       if (derived !== group.groupName) {
         const exists = await services.getGroupByName(derived);
-        if (exists) return res.status(409).send('Group name already exists');
+        if (exists) return res.status(409).send("Group name already exists");
         updates.groupName = derived;
         finalGroupName = derived;
       }
     }
 
     const saved = await services.updateGroupByName(current, updates);
-    if (!saved) return res.status(500).send('Failed to update group');
+    if (!saved) return res.status(500).send("Failed to update group");
 
-    const finalDisplay = (typeof updates.displayName === 'string' && updates.displayName.trim())
-  ? updates.displayName.trim()
-  : group.displayName;
+    const finalDisplay =
+      typeof updates.displayName === "string" && updates.displayName.trim()
+        ? updates.displayName.trim()
+        : group.displayName;
 
-    res.json({ ok: true, groupName: finalGroupName, displayName: finalDisplay });
+    res.json({
+      ok: true,
+      groupName: finalGroupName,
+      displayName: finalDisplay,
+    });
   } catch (err) {
-    console.error('updateGroup error:', err);
-    res.status(500).send('Server error');
+    console.error("updateGroup error:", err);
+    res.status(500).send("Server error");
   }
-};
+}
 
 // DELETE
 async function deleteGroup(req, res) {
   try {
-    const viewerId  = req.session?._id;
+    const viewerId = req.session?._id;
     const groupName = req.params.groupName;
 
     const group = await services.getGroupByName(groupName);
-    if (!group) return res.status(404).send('Group not found');
+    if (!group) return res.status(404).send("Group not found");
 
     // admin-only
-    const isAdmin = Array.isArray(group.members?.admins) &&
-      group.members.admins.some(a => String(a) === String(viewerId));
-    if (!isAdmin) return res.status(403).send('Admins only');
-
+    const isAdmin =
+      Array.isArray(group.members?.admins) &&
+      group.members.admins.some((a) => String(a) === String(viewerId));
+    if (!isAdmin) return res.status(403).send("Admins only");
 
     // detach posts from this group first:
     await postModel.updateMany({ group: group._id }, { $unset: { group: 1 } });
@@ -253,13 +309,23 @@ async function deleteGroup(req, res) {
     // delete the group document
     await groupModel.deleteOne({ _id: group._id });
 
-
-
     res.json({ ok: true });
   } catch (err) {
-    console.error('deleteGroup error:', err);
-    res.status(500).send('Server error');
+    console.error("deleteGroup error:", err);
+    res.status(500).send("Server error");
   }
-};
+}
 
-module.exports = { groupPage, createGroupPage, createGroup, getMembership, toggleFollow, getMembers, removeMember, setMemberRole, updateGroup, deleteGroup };
+module.exports = {
+  groupPage,
+  createGroupPage,
+  createGroup,
+  getMembership,
+  toggleFollow,
+  getMembers,
+  removeMember,
+  setMemberRole,
+  updateGroup,
+  deleteGroup,
+  allGroupsPage,
+};

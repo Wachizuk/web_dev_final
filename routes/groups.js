@@ -12,7 +12,7 @@ router.route("/new")
 .post(userController.isLoggedIn, groupController.createGroup);
 
 
-
+router.get("/allGroups", userController.isLoggedIn, groupController.allGroupsPage)
 // show specific group feed
 router.get("/:groupName", userController.isLoggedIn, groupController.groupPage);
 

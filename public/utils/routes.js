@@ -8,6 +8,7 @@ const base = {
 const groups = {
   new: `${base.groups}/new`,
   groupName: (groupName) => `${base.groups}/${groupName}`,
+  allGroups: `${base.groups}/allGroups`
 };
 
 const posts = {
