@@ -429,7 +429,11 @@ function initGroupSettingsCard() {
     const desc = (fd.get("description") || "").trim();
 
     const body = { displayName: nextName, description: desc };
-
+    if(body.displayName.length  > 20)
+    {
+      alert("Display name is too long [20 MAX]");
+      return;
+    }
     const res = await fetch(`/groups/${groupName}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

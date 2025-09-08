@@ -7,13 +7,14 @@ function validateUsername(username) {
   const res =
     typeof username === "string" &&
     username.length === username.trim().length &&
-    username.length > 0 &&
+    username.length > 0 && 
+    username.length < 15 &&
     !/\s/.test(username) &&
+    /^[A-Za-z0-9_-]+$/.test(username) &&
     !validateEmail(username);
   if (res == false) console.log(`username validation falied for '${username}'`);
   return res;
 }
-
 /**
  * validate password is string and not empty
  * @param {*} password
@@ -48,12 +49,14 @@ function validatePostParams(author, title, contentBlocks) {
   if (
     !title ||
     typeof title !== "string" ||
-    title.trim().length !== title.length
+    title.trim().length !== title.length ||
+    title.length > 50 
   ) {
     const err = new Error("Title Invalid");
     err.code = "INVALID_PARAM";
     throw err;
   }
+
 
   contentBlocks = contentBlocks ? contentBlocks : [];
 

@@ -27,7 +27,7 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const payload = {
-    displayName: displayInput?.value || "",
+    displayName: displayInput?.value || "", 
     description: descriptionInput?.value || "",
     admins: adminsInput?.value || "",
     managers: managersInput?.value || "",
@@ -37,6 +37,12 @@ form.addEventListener("submit", async (e) => {
     alert("Display name is required");
     return;
   }
+
+ if (payload.displayName.length > 20) {
+    alert("Display name is too long [20 MAX]");
+    return;
+  }
+
 
   try {
     const res = await fetch("/groups/new", {

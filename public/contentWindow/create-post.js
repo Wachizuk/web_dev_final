@@ -168,7 +168,11 @@ document
       alert("title missing");
       return;
     }
-
+    if(title.length > 50)
+    {
+      alert("title too long ");
+      return;
+    }
     let countTextInputs = 0;
 
     contentBlocks.forEach((block, index) => {

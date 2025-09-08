@@ -366,6 +366,12 @@ const register = async (req, res) => {
         success: false,
       });
     }
+    else if(newAccount === -1){
+      return res.json({
+        message: "Registration failed - username contains illegal characters / too long [more than 15]",
+        success: false,
+      });
+    }
   } catch (err) {
     // Catch any server/db errors during registration
     console.error("Error during registration:", err);
