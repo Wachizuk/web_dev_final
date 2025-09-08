@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const Validator = require("./validator");
 const mongoose = require("mongoose");
+const Post = require("../models/post");
 
 const getUserByEmail = async (email) => {
   return await User.findOne({ email: email.toLowerCase() });
@@ -272,6 +273,8 @@ const deleteAccount = async (userId, password) => {
     ) {
       return { success: false, code: 401, message: "Wrong password" };
     }
+
+    await Post.deleteMany({ author: user._id });
 
     // Delete the user document
     await user.deleteOne();
