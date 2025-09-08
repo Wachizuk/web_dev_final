@@ -3,7 +3,7 @@ const fileInput = document.getElementById("avatar-input");
 const avatarImg = document.getElementById("profile-avatar");
 
 changeBtn.addEventListener("click", () => {
-  fileInput.click(); // simulate click on hidden input
+  fileInput.click();
 });
 
 fileInput.addEventListener("change", async () => {
@@ -21,8 +21,7 @@ fileInput.addEventListener("change", async () => {
 
     const data = await res.json();
     if (res.ok) {
-      // update the img src dynamically
-      avatarImg.src = data.url + "?t=" + new Date().getTime(); // add timestamp to avoid caching
+      avatarImg.src = data.url + "?t=" + new Date().getTime(); 
     } else {
       alert(data.error || "Failed to upload");
     }

@@ -207,7 +207,7 @@ postForm.addEventListener("submit", async (e) => {
     }
   }
 
-  // await changeGroup(group);
+
   renderContentWindow(routes.mainFeed);
 });
 

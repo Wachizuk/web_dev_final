@@ -304,12 +304,12 @@ async function getAddress(userId) {
 // cleans input and makes sure is a valid array
 function toUsernameArray(input) {
   if (Array.isArray(input))
-    return input.map((s) => String(s || "").trim()).filter(Boolean); //cleans input and makes sure is a valid array
+    return input.map((s) => String(s || "").trim()).filter(Boolean); 
   if (typeof input === "string")
     return input
       .split(",")
       .map((s) => s.trim())
-      .filter(Boolean); //if string, split by comma and clean
+      .filter(Boolean); 
   return [];
 }
 

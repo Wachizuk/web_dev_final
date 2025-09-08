@@ -97,7 +97,6 @@ window.addEventListener('hashchange', async () => {
 })
 
 ///////////////SEARCH BAR////////////////////////
-// DOM refs
 const form  = document.getElementById("top-nav-search-form");
 const input = document.getElementById("top-nav-search-input");
 const menu  = document.getElementById("top-nav-suggest");

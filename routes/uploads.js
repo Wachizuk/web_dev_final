@@ -3,7 +3,7 @@ const router = express.Router();
 const uploadsController = require("../controllers/uploads");
 const userController = require("../controllers/user")
 
-// Middleware: accept raw image bytes (no external libraries used)
+// Middleware: accept raw image bytes
 const rawImage = express.raw({
   type: ["image/png", "image/jpeg", "image/webp"],
   limit: "10mb",

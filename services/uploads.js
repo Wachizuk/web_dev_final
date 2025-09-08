@@ -44,12 +44,6 @@ const uploadPostFile = async (
   contentType,
   fileName = ""
 ) => {
-  // const post = await postService.getPostById(postId);
-  // if (!post) {
-  //   const err = new Error("Post Not Found");
-  //   err.code = "NOT_FOUND";
-  //   throw err;
-  // }
 
   const saveLocation = path.join(POSTS_DIR, postId);
   //unique file name

@@ -79,7 +79,6 @@ if (typeof internalHashChange === "undefined")
  * @param {String} path
  */
 async function renderContentWindow(path, outerHashChange = false) {
-  const orgPath = path;
   console.log("attempting to get path: " + path);
   if (typeof path === "string" && path[0] !== "/") {
     path = "/" + path;

@@ -24,9 +24,6 @@ if (!process.env.PORT) {
 // ---------------- MIDDLEWARE ----------------
 // Middleware for cors security
 app.use(cors());
-
-// app.use(twitter());
-
 // Middle ware for handling user sessions session.
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -35,13 +32,10 @@ app.use(session({
 }));
 // Middleware to parse incoming JSON requests (body parser)
 app.use(express.json());
-
 // Set EJS as the default template engine for rendering views
 app.set('view engine', 'ejs')
 
 // ---------------- ROUTES ----------------
-// Load the index route (main page routes)
-
 // Load the route for post data
 const postsRoute = require('./routes/posts');
 app.use('/posts', postsRoute);
@@ -62,7 +56,7 @@ app.use("/groups", groupsRoute);
 const suggestRoute = require("./routes/suggest")
 app.use("/suggest", suggestRoute);
 
-// your existing router for POST/GET avatar remains fine
+// Load Upload route
 const uploadsRoute = require('./routes/uploads');
 app.use('/uploads', uploadsRoute);
 

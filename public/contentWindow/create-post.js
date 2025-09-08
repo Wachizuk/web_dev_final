@@ -215,7 +215,6 @@ document
     mediaContentBlocks?.forEach(async (block, index) => {});
 
     if (success < mediaContentBlocks.length) {
-      // await deletePost(post._id);
       await deletePost(postId);
       alert("Failed uploading post files :(");
     } else {

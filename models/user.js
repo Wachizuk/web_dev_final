@@ -8,8 +8,8 @@ const userSchema = new Schema({
   username: { type: String, required: true, unique: true, index: true },
   password: { type: String, required: true },
 
-  // Profile picture (store only URL, do NOT store raw image data in MongoDB)
-  avatarUrl:     { type: String, default: '' },   // Example: https://res.cloudinary.com/.../avatar.jpg
+  // Profile picture
+  avatarUrl:     { type: String, default: '' },   
 
   // Friends: store references to other users
 
@@ -20,6 +20,4 @@ const userSchema = new Schema({
 }, { timestamps: true });
 
 
-// Export the model so it can be used in other parts of the application
-// 'User' is the collection name 
 module.exports = mongoose.model('User', userSchema);

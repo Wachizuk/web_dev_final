@@ -1,5 +1,4 @@
 
-/* Custom font only for register block */
 @font-face {
   font-family: "RegSans";
   src: url("/fonts/RegSans.woff2") format("woff2");
@@ -25,7 +24,7 @@
   text-shadow: 0 1px 3px rgba(0,0,0,.15);
 }
 
-/* Grid layout with at least 2 columns */
+/* Grid layout with 2 columns */
 .reg-notes-grid {
   column-count: 2;
   column-gap: 16px;
@@ -39,13 +38,13 @@
   padding: 0.9rem 1rem;
   background: var(--bg-color-secondary);
   border: 1px solid rgba(0,0,0,.08);
-  border-radius: 14px;                    /* border-radius requirement */
+  border-radius: 14px;                    
   box-shadow: 0 2px 6px rgba(0,0,0,.08);
   color: var(--color-secondary);
   text-align: center;
   font-size: 0.95rem;
   font-weight: 500;
-  break-inside: avoid;                    /* don’t split notes between columns */
+  break-inside: avoid;                   
   transition: transform .2s ease, box-shadow .2s ease;
 }
 
