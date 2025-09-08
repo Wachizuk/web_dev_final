@@ -179,10 +179,10 @@ async function setMemberRole(groupName, userId, role) {
 
 // -------------------------------------------------------------------------------------------------------
 
-
+const defaultCover = "groupPlaceHolder.png";
 
 async function createGroup({ groupName, displayName, description, members }) {
-  const doc = new Group({ groupName, displayName, description, members });
+  const doc = new Group({ groupName, displayName, description, members, coverFile: defaultCover });
   const saved = await doc.save();
 
   // collect all user ids that were assigned as admins/managers
