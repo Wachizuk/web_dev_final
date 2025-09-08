@@ -2,12 +2,8 @@ require('custom-env').env('', './config');
 const express = require('express');
 const connectDB = require('./config/db');
 const cors = require('cors');
-const path = require('path');
-
-//middleware imports
-
 const session = require('express-session');
-
+const path = require('path');
 const app = express();
 
 // ---------------- CHECK ENV VARIABLES ----------------
@@ -53,11 +49,11 @@ app.use('/user', userRoute);
 const baseRoute = require('./routes/base');
 app.use('/', baseRoute); 
 
-
 // Load the group route
 const groupsRoute = require("./routes/groups");
 app.use("/groups", groupsRoute);
 
+// Load the suggest route
 const suggestRoute = require("./routes/suggest")
 app.use("/suggest", suggestRoute);
 
