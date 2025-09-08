@@ -113,4 +113,47 @@
 }
 
 
-/* === Create-Group Styling ===*/
+/* === All Groups Page === */
+
+.container {
+    margin-left: 20px !important;
+}
+
+.all-groups-page { padding-left: 8px; }
+
+.group-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 240px); 
+  gap: 24px;
+  justify-content: start; 
+}
+
+
+.group-card {
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.group-card__cover {
+  width: 100%;
+  aspect-ratio: 3 / 1.4;  
+  object-fit: cover;
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+}
+
+.group-card .card-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+}
+
+.group-card .card-text { margin-top: 1rem; }
+
+.group-card__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}

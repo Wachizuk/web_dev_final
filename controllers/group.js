@@ -7,6 +7,7 @@ const {
 
 const createGroupRoute = "main/partials/create-group";
 const allGroupsRoute = "main/partials/all-groups";
+
 // const groupFeedRoute = "main/partials/group-feed";
 const postModel = require("../models/post");
 const groupModel = require("../models/group");
@@ -16,9 +17,36 @@ async function createGroupPage(req, res) {
   res.render(createGroupRoute, {});
 }
 
-// GET /groups/new - render the create form
+// GET /groups/allGroups - render the create form
+// async function allGroupsPage(req, res) {
+//   res.render(allGroupsRoute, {});
+// }
+
 async function allGroupsPage(req, res) {
-  res.render(allGroupsRoute, {});
+  try {
+    const rows = await groupService.getAllGroups();
+
+    const groups = rows.map(g => {
+      const m = g.members || {};
+      const membersCount =
+        (m.admins?.length || 0) +
+        (m.managers?.length || 0) +
+        (m.plainUsers?.length || 0);
+
+      return {
+        groupName:   g.groupName,
+        displayName: g.displayName,
+        description: g.description || "",
+        coverUrl:    g.coverFile ? `/uploads/groups/${g.coverFile}` : "/images/team-placeholder.png",
+        membersCount
+      };
+    });
+
+    return res.render(allGroupsRoute, { groups });
+  } catch (err) {
+    console.error("allGroupsPage error:", err);
+    return res.render(allGroupsRoute, { groups: [], error: "Failed to load groups" });
+  }
 }
 
 // POST /groups - create a group

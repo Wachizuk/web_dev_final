@@ -347,7 +347,7 @@ function initFollowButton() {
           membersBtn.textContent = "Members (" + (data.membersCount || 0) + ")";
 
         initMembersCard();
-        window.location.reload();
+        //window.location.reload();
       })
       .catch(function (e) {
         alert(e.message);
