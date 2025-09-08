@@ -12,6 +12,9 @@
   border-radius: 8px; /* only if your cards already use rounded corners */
 }
 
+#group-title-anchor {
+  scroll-margin-top: 10px; /* adjust value */
+}
 
 /* === 2 MAIN CONTENT COLS part === */
 
@@ -22,7 +25,18 @@
   align-items: start;
 }
 
-#group-columns .post-list {
+/* Right column: independent scroll */
+#group-columns {
+  align-items: stretch; /* make both columns equal height */
+}
+
+#group-columns .right-col {
+  max-height: calc(100vh - 120px); /* adjust offset for header/nav height */
+  overflow-y: auto;
+  padding-right: 4px;  /* optional: keep scrollbar from overlapping content */
+}
+
+#group-columns .left-col > .post-list {
   width: 100%;          
   justify-self: stretch;
 }
@@ -30,20 +44,19 @@
 #group-columns .left-col { min-width: 0; }
 #group-columns .right-col { min-width: 0; }
 
+#group-columns .right-col .card.post .card-header { padding: .75rem 1rem; }
+#group-columns .right-col .card.post .post-block { padding: 1.25rem 1rem 1rem; } 
+#group-columns .right-col .card.post .post-block > :first-child { margin-top: 0; }
+
+#group-columns .right-col > .card.post { margin-bottom: 1rem; }
+
 @media (max-width: 1000px) {
   #group-columns {
     grid-template-columns: 1fr; /* stack on small screens */
   }
 }
 
-#group-about { margin-bottom: 1rem; border-radius: 4px; }
-
-#group-about .post-title {
-  margin: 0;
-  padding: 0.75rem 1rem 0; 
-}
-
-#group-about .post-block { padding: 0 1rem 0.75rem; }
+#group-about { border-radius: 4px; }
 
 #group-about .post-text { margin: 0; white-space: pre-wrap; }
 

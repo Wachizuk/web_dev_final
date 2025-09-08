@@ -31,6 +31,15 @@ async function renderGroupPosts() {
   }
 }
 
+function scrollWithin(container, target, pad = 0) {
+  const cRect = container.getBoundingClientRect();
+  const tRect = target.getBoundingClientRect();
+  container.scrollTo({
+    top: container.scrollTop + (tRect.top - cRect.top) - pad,
+    behavior: "smooth",
+  });
+}
+
 //------------------------------ Members card --------------------------------
 
 async function initMembersCard() {
@@ -195,11 +204,19 @@ function initMembersButton() {
 
   btn.addEventListener("click", function (e) {
     e.preventDefault();
-    var anchor =
+
+    const title = document.getElementById("group-title-anchor");
+    if (title) title.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    const anchor =
       document.getElementById("members-card-anchor") ||
       document.getElementById("group-members-card");
-    if (anchor && anchor.scrollIntoView) {
-      anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+    const container = document.getElementById("group-right-col");
+    if (container && anchor) {
+      container.scrollTo({
+        top: anchor.offsetTop - container.offsetTop,
+        behavior: "smooth",
+      });
     }
   });
 }
@@ -373,10 +390,18 @@ function initGroupSettingsCard() {
 
   // Toggle show and scroll(Bootstrap .d-none)
   btn.addEventListener("click", () => {
-    if (card.classList.contains("d-none")) {
-      card.classList.remove("d-none"); // ensure visible
+    if (card.classList.contains("d-none")) card.classList.remove("d-none");
+
+    const title = document.getElementById("group-title-anchor");
+    if (title) title.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    const container = document.getElementById("group-right-col");
+    if (container) {
+      container.scrollTo({
+        top: card.offsetTop - container.offsetTop,
+        behavior: "smooth",
+      });
     }
-    card.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
   // Submit edits
